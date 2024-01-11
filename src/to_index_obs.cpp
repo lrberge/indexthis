@@ -117,7 +117,23 @@ r_vector::r_vector(SEXP x){
   }  
 }
 
-void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_groups){
+SEXP std_string_to_r_string(std::vector<std::string> x){
+  
+  int n = x.size();
+  
+  SEXP res = PROTECT(Rf_allocVector(STRSXP, n));
+  
+  for(int i=0 ; i<n ; ++i){
+    SET_STRING_ELT(res, i, Rf_mkCharCE(x[i].c_str(), CE_UTF8));
+  }
+  
+  UNPROTECT(1);
+  
+  return res;
+}
+
+void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_groups,
+                                  vector<int> &vec_first_obs, bool is_final){
   
   const size_t n = x->n;
   
@@ -174,6 +190,9 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
         // hash never seen => ok
         hashed_obs_vec[id] = i + 1;
         p_index[i] = ++g;
+        if(is_final){
+          vec_first_obs.push_back(i + 1);
+        }
       }
     }
   } else if(x_type == T_INT){
@@ -198,6 +217,9 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
       if(!does_exist){
         hashed_obs_vec[id] = i + 1;
         p_index[i] = ++g;
+        if(is_final){
+          vec_first_obs.push_back(i + 1);
+        }
       }
     }
   } else {
@@ -231,6 +253,9 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
       if(!does_exist){
         hashed_obs_vec[id] = i + 1;
         p_index[i] = ++g;
+        if(is_final){
+          vec_first_obs.push_back(i + 1);
+        }
       }
     }
   }
@@ -241,7 +266,8 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
 }
 
 void general_type_to_index_double(r_vector *x, int *__restrict p_index_in, 
-                                  int *__restrict p_index_out, int &n_groups){
+                                  int *__restrict p_index_out, int &n_groups,
+                                  vector<int> &vec_first_obs, bool is_final){
   // Two differences with the *_single version:
   // - when hashing and checking for collision => we use the extra index
   // - we include the possibility of fast ints
@@ -285,6 +311,9 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
         ++g;
         int_array[id] = g;
         p_index_out[i] = g;
+        if(is_final){
+          vec_first_obs.push_back(i + 1);
+        }
       } else {
         p_index_out[i] = int_array[id];
       }
@@ -336,6 +365,9 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
           // hash never seen => ok
           hashed_obs_vec[id] = i + 1;
           p_index_out[i] = ++g;
+          if(is_final){
+            vec_first_obs.push_back(i + 1);
+          }
         }
       }
     } else if(x_type == T_INT){
@@ -360,6 +392,9 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
         if(!does_exist){
           hashed_obs_vec[id] = i + 1;
           p_index_out[i] = ++g;
+          if(is_final){
+            vec_first_obs.push_back(i + 1);
+          }
         }
       }
     } else {
@@ -393,6 +428,9 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
         if(!does_exist){
           hashed_obs_vec[id] = i + 1;
           p_index_out[i] = ++g;
+          if(is_final){
+            vec_first_obs.push_back(i + 1);
+          }
         }
       }
     }
@@ -404,7 +442,8 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
 }
 
 void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k, 
-                            int *__restrict p_index, int &n_groups){
+                            int *__restrict p_index, int &n_groups,
+                            vector<int> &vec_first_obs, bool is_final){
   
   int sum_bin_ranges = 0;
   int K = all_k.size();
@@ -439,6 +478,9 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
         ++g;
         int_array[id] = g;
         p_index[i] = g;
+        if(is_final){
+          vec_first_obs.push_back(i + 1);
+        }
       } else {
         p_index[i] = int_array[id];
       }
@@ -470,6 +512,9 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
           ++g;
           int_array[id] = g;
           p_index[i] = g;
+          if(is_final){
+            vec_first_obs.push_back(i + 1);
+          }
         } else {
           p_index[i] = int_array[id];
         }
@@ -528,6 +573,9 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
           ++g;
           int_array[id] = g;
           p_index[i] = g;
+          if(is_final){
+            vec_first_obs.push_back(i + 1);
+          }
         } else {
           p_index[i] = int_array[id];
         }
@@ -547,7 +595,7 @@ SEXP cpp_to_index_obs(SEXP x){
   // x: vector or list of vectors of the same length (n)
   // returns:
   // - index: vector of length n, from 1 to the number of unique values of x (g)
-  // - first_obs: vector of length g of the first observation belonging to each group
+  // - vec_first_obs: vector of length g of the first observation belonging to each group
   
   size_t n = 0;
   int K = 0;
@@ -569,8 +617,11 @@ SEXP cpp_to_index_obs(SEXP x){
   }
   
   // the result to be returned
-  SEXP res = PROTECT(Rf_allocVector(INTSXP, n));
-  int *p_res = INTEGER(res);
+  SEXP index = PROTECT(Rf_allocVector(INTSXP, n));
+  int *p_index = INTEGER(index);
+  
+  // vector of the first observation of the group
+  std::vector<int> vec_first_obs;
   
   // finding out the fast cases
   // Note that partial fast ordering is enabled and 
@@ -596,73 +647,85 @@ SEXP cpp_to_index_obs(SEXP x){
   // STEP 1: taking care of fast indexing of ints
   //
   
+  bool is_final = false;
   bool init_done = false;
   if(!id_fast_int.empty()){
     init_done = true;
-    multiple_ints_to_index(all_vecs, id_fast_int, p_res, n_groups);
     
-    if((size_t) K == id_fast_int.size()){
-      // we're done
-      UNPROTECT(1);
-      return res;
-    }
+    is_final = (size_t) K == id_fast_int.size();
+    multiple_ints_to_index(all_vecs, id_fast_int, p_index, n_groups, vec_first_obs, is_final);
   }
   
-  // 
-  // STEP 2: general algorithm
-  //
-  
-  // note: here only if not all vectors are "fast"
-  //
-  
-  
-  // first we find out who is left
-  vector<int> all_k_left;
-  for(int k=0 ; k<K ; ++k){
-    if(std::find(id_fast_int.begin(), id_fast_int.end(), k) == id_fast_int.end()){
-      // i.e. if k not in id_fast_int (which has been done)
-      all_k_left.push_back(k);
-    }
-  }
-  
-  if(!init_done){
-    int k0 = all_k_left[0];
-    // we remove that element
-    all_k_left.erase(all_k_left.begin());
+  if(!is_final){
     
-    general_type_to_index_single(&all_vecs[k0], p_res, n_groups);
+    // 
+    // STEP 2: general algorithm
+    //
     
-    if(all_k_left.empty()){
-      // we're done
-      UNPROTECT(1);
-      return res;
+    // note: here only if not all vectors are "fast"
+    //  
+    
+    // first we find out who is left
+    vector<int> all_k_left;
+    for(int k=0 ; k<K ; ++k){
+      if(std::find(id_fast_int.begin(), id_fast_int.end(), k) == id_fast_int.end()){
+        // i.e. if k not in id_fast_int (which has been done)
+        all_k_left.push_back(k);
+      }
     }
-  }
-  
-  // here: p_res is an index
-  // we will loop over all remainining items and create the index sequentially
-  
-  int *p_extra_index = new int[n];
-  
-  bool is_res_updated_index = true;
-  for(size_t ind=0 ; ind<all_k_left.size() ; ++ind){
-    int k = all_k_left[ind];
-    if(is_res_updated_index){
-      general_type_to_index_double(&all_vecs[k], p_res, p_extra_index, n_groups);
-      is_res_updated_index = false;
-    } else {
-      general_type_to_index_double(&all_vecs[k], p_extra_index, p_res, n_groups);
-      is_res_updated_index = true;
+    
+    if(!init_done){
+      int k0 = all_k_left[0];
+      // we remove that element
+      all_k_left.erase(all_k_left.begin());
+      
+      is_final = all_k_left.empty();
+      general_type_to_index_single(&all_vecs[k0], p_index, n_groups, vec_first_obs, is_final);
     }
-  }
+    
+    if(!is_final){
+      // here: p_index is an index
+      // we will loop over all remainining items and create the index sequentially
+      
+      int *p_extra_index = new int[n];
+      
+      bool is_res_updated_index = true;
+      for(size_t ind=0 ; ind<all_k_left.size() ; ++ind){
+        int k = all_k_left[ind];
+        is_final = ind == all_k_left.size() - 1;
+        if(is_res_updated_index){
+          general_type_to_index_double(&all_vecs[k], p_index, p_extra_index, n_groups, vec_first_obs, is_final);
+          is_res_updated_index = false;
+        } else {
+          general_type_to_index_double(&all_vecs[k], p_extra_index, p_index, n_groups, vec_first_obs, is_final);
+          is_res_updated_index = true;
+        }
+      }
+      
+      if(!is_res_updated_index){
+        std::memcpy(p_index, p_extra_index, sizeof(int) * n);
+      }
+      delete[] p_extra_index;
+    }
+  } 
   
-  if(!is_res_updated_index){
-    std::memcpy(p_res, p_extra_index, sizeof(int) * n);
-  }
-  delete[] p_extra_index;
+  // we copy the first observations into an R vector
+  int g = vec_first_obs.size();
+  SEXP r_first_obs = PROTECT(Rf_allocVector(INTSXP, g));
+  int *p_first_obs = INTEGER(r_first_obs);
+  std::memcpy(p_first_obs, vec_first_obs.data(), sizeof(int) * g);
   
-  UNPROTECT(1);
-  return res;  
+  // we save the results into a list
+  SEXP res = PROTECT(Rf_allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(res, 0, index);
+  SET_VECTOR_ELT(res, 1, r_first_obs);
+  
+  // names
+  Rf_setAttrib(res, R_NamesSymbol, std_string_to_r_string({"index", "first_obs"}));
+    
+  UNPROTECT(3);
+  
+  return index;  
 }
 
 
