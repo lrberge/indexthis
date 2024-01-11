@@ -1,0 +1,19 @@
+Package: to_index
+Type: Package
+Title: Quick indexation
+Version: 0.11.2
+Authors@R:
+    c(person(given = "Laurent",
+             family = "Berge",
+             role = c("aut", "cre"),
+             email = "laurent.berge@u-bordeaux.fr"))
+Imports: Rcpp(>= 1.0.5), dreamerr(>= 1.4.0)
+LinkingTo: Rcpp
+Depends: R(>= 3.5.0)
+Description: Quick indexation of any type of vector or of any combination of those. Indexation turns a vector into an integer vector going from 1 to the number of unique elements.
+License: GPL-3
+VignetteBuilder: knitr
+LazyData: true
+RoxygenNote: 7.2.3
+Roxygen: list(markdown = TRUE)
+Encoding: UTF-8

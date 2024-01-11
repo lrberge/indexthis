@@ -1,0 +1,18 @@
+useDynLib(to_index, .registration = TRUE)
+
+#
+# EXPORT
+#
+
+export(cpp_to_index)
+
+#
+# IMPORT
+#
+
+import(dreamerr)
+
+importFrom(Rcpp, evalCpp)
+
+
+
