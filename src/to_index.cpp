@@ -591,7 +591,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
 }
 
 // [[Rcpp::export]]
-SEXP cpp_to_index_obs(SEXP x){
+SEXP cpp_to_index(SEXP x){
   // x: vector or list of vectors of the same length (n)
   // returns:
   // - index: vector of length n, from 1 to the number of unique values of x (g)
