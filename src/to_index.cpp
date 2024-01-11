@@ -113,7 +113,7 @@ r_vector::r_vector(SEXP x){
   if(IS_INT){
     // finding out if we're in the easy case
     this->x_range_bin = power_of_two(this->x_range);    
-    this->is_fast_int = this->x_range < 100000 || this->x_range <= power_of_two(2.5*n);
+    this->is_fast_int = this->x_range < 100000 || this->x_range_bin <= power_of_two(2.5*n);
   }  
 }
 
