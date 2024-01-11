@@ -725,7 +725,7 @@ SEXP cpp_to_index_obs(SEXP x){
     
   UNPROTECT(3);
   
-  return index;  
+  return res;  
 }
 
 
