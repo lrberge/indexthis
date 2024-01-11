@@ -595,7 +595,7 @@ SEXP cpp_to_index(SEXP x){
   // x: vector or list of vectors of the same length (n)
   // returns:
   // - index: vector of length n, from 1 to the number of unique values of x (g)
-  // - vec_first_obs: vector of length g of the first observation belonging to each group
+  // - first_obs: vector of length g of the first observation belonging to each group
   
   size_t n = 0;
   int K = 0;
