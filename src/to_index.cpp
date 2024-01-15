@@ -764,6 +764,14 @@ SEXP cpp_double_factor_to_index(SEXP x1, SEXP x2){
   // x1, x2: factors
   // returns an index vector of size len(x1) + len(x2)
   
+  if(!Rf_isFactor(x1)){
+    Rf_error("The argument x1 must be a factor.");
+  }
+  
+  if(!Rf_isFactor(x2)){
+    Rf_error("The argument x2 must be a factor.");
+  }
+  
   SEXP lab1 = Rf_getAttrib(x1, R_LevelsSymbol); 
   SEXP lab2 = Rf_getAttrib(x2, R_LevelsSymbol); 
   
@@ -841,7 +849,7 @@ SEXP cpp_double_factor_to_index(SEXP x1, SEXP x2){
       p_g_exists[g_NA - 1] = 1;
       p_index[i] = g_NA;
     } else {
-      g = p_lab_index[xi];
+      g = p_lab_index[xi - 1];
       p_g_exists[g - 1] = 1;
       p_index[i] = g;
     }    
@@ -854,7 +862,7 @@ SEXP cpp_double_factor_to_index(SEXP x1, SEXP x2){
       p_g_exists[g_NA - 1] = 1;
       p_index[n1 + i] = g_NA;
     } else {
-      g = p_lab_index_2[xi];
+      g = p_lab_index_2[xi - 1];
       p_g_exists[g - 1] = 1;
       p_index[n1 + i] = g;
     }
