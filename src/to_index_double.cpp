@@ -43,6 +43,8 @@ inline uint32_t hash_double(uint32_t v1, uint32_t v2, int shifter){
 class r_vector {
   r_vector() = delete;
   
+  SEXP x_conv;
+  
 public:
   r_vector(SEXP);
   
@@ -53,6 +55,12 @@ public:
   int x_range_bin = 0;
   int x_min = 0;
   int type = 0;
+  
+  // this is only used in the quick ints algorithm
+  // for factors and bool we assume there are NAs since we don't traverse the data
+  //  to find the range, contrary to ints or dbl_ints
+  bool any_na = true;
+  int NA_value = -1;
   
   // pointers: only the valid one ends up non-null
   int *px_int = (int *) nullptr;
@@ -67,53 +75,111 @@ r_vector::r_vector(SEXP x){
   this->n = n;
   
   bool IS_INT = false;
-  if(TYPEOF(x) == INTSXP){
-    IS_INT = true;
-    this->px_int = INTEGER(x);
+  if(Rf_isNumeric(x) || Rf_isFactor(x) || TYPEOF(x) == LGLSXP){
     
-    int *px = INTEGER(x);
-    int x_min = px[0], x_max = px[0], x_tmp;
-    for(int i=1 ; i<n ; ++i){
-      x_tmp = px[i];
-      if(x_tmp > x_max) x_max = x_tmp;
-      if(x_tmp < x_min) x_min = x_tmp;
-    }
-    
-    this->x_min = x_min;
-    this->x_range = x_max - x_min + 1;
-    
-    type = T_INT;
-  } else if(TYPEOF(x) == REALSXP){
-    // we check if underlying structure is int
-    this->px_dbl = REAL(x);
-    IS_INT = true;
-    double *px = REAL(x);
-    double x_min = px[0], x_max = px[0], x_tmp;
-    for(int i=1 ; i<n ; ++i){
-      x_tmp = px[i];
-      if(!(px[i] == (int) px[i])){
-        IS_INT = false;
-        break;
-      }      
-      if(x_tmp > x_max) x_max = x_tmp;
-      if(x_tmp < x_min) x_min = x_tmp;
-    }
+    if(TYPEOF(x) == REALSXP){
+      // we check if the underlying structure is int
+      this->px_dbl = REAL(x);
+      IS_INT = true;
+      double *px = REAL(x);
+      double x_min = px[0], x_max = px[0], x_tmp;
+      bool any_na = false;
+      for(int i=1 ; i<n ; ++i){
+        x_tmp = px[i];
+        
+        if(std::isnan(x_tmp)){
+          any_na = true;
+        } else if(!(x_tmp == (int) x_tmp)){
+          IS_INT = false;
+          break;
+        } else if(x_tmp > x_max){
+          x_max = x_tmp;
+        } else if(x_tmp < x_min){
+          x_min = x_tmp;
+        }
+      }
+      
+      this->any_na = any_na;
 
-    this->x_min = static_cast<int>(x_min);
-    this->x_range = x_max - x_min;
+      this->x_min = static_cast<int>(x_min);
+      // +1 for the NAs
+      this->x_range = x_max - x_min + 1;
+      
+      type = IS_INT ? T_DBL_INT : T_DBL;
+    } else {
+      // logical, factor and integer are all integers
+      IS_INT = true;
+      this->px_int = INTEGER(x);
+      type = T_INT;
+      
+      if(TYPEOF(x) == INTSXP){
+        int *px = INTEGER(x);
+        int x_min = px[0], x_max = px[0], x_tmp;
+        bool any_na = false;
+        for(int i=1 ; i<n ; ++i){
+          x_tmp = px[i];
+          
+          if(x_tmp == NA_INTEGER){
+            any_na = true;
+          } else if(x_tmp > x_max){
+            x_max = x_tmp;
+          } else if(x_tmp < x_min){
+            x_min = x_tmp;
+          }
+        }
+        
+        this->any_na = any_na;
+        this->x_min = x_min;
+        // +1 for the NAs
+        this->x_range = x_max - x_min + 1;
+      } else if(TYPEOF(x) == LGLSXP){
+        this->x_min = 0;
+        // 0, 1, NA
+        this->x_range = 3;
+      } else {
+        // factor
+        SEXP labels = Rf_getAttrib(x, R_LevelsSymbol);
+        // factors always start at 1
+        this->x_min = 1;
+        // we add 1 for the NAs
+        this->x_range = Rf_length(labels) + 1;
+      }
+    }
     
-    type = IS_INT ? T_DBL_INT : T_DBL;
   } else if(TYPEOF(x) == STRSXP){
     type = T_STR;
     this->px_intptr = (intptr_t *) STRING_PTR(x);
   } else {
-    Rf_error("In to_integer, the R vectors must be of type: int, real or char. The current type is not valid.");
+    
+    if(TYPEOF(x) == CHARSXP || TYPEOF(x) == LGLSXP || TYPEOF(x) == INTSXP || 
+       TYPEOF(x) == REALSXP || TYPEOF(x) == CPLXSXP || TYPEOF(x) == STRSXP || TYPEOF(x) == RAWSXP){
+      // we convert to character
+      SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("as.character"), x));
+  
+      int any_error;
+      this->x_conv = R_tryEval(call_as_character, R_GlobalEnv, &any_error);
+
+      if(any_error){
+        Rf_error("In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n");
+      }
+      
+      UNPROTECT(1);
+      
+      // conversion succeeded
+      type = T_STR;
+      this->px_intptr = (intptr_t *) STRING_PTR(this->x_conv);
+      
+    } else {
+      Rf_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
+    }    
+    
   }
   
   if(IS_INT){
     // finding out if we're in the easy case
     this->x_range_bin = power_of_two(this->x_range);    
     this->is_fast_int = this->x_range < 100000 || this->x_range_bin <= power_of_two(2.5*n);
+    this->NA_value = this->x_range - 1;
   }  
 }
 
@@ -440,6 +506,20 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
   
   n_groups = g;
 }
+inline void update_index_intarray_g_obs(int id, size_t i, int &g, int * &int_array, 
+                                        int * &p_index, bool &is_final, vector<int> &vec_first_obs){
+  
+  if(int_array[id] == 0){
+    ++g;
+    int_array[id] = g;
+    p_index[i] = g;
+    if(is_final){
+      vec_first_obs.push_back(i + 1);
+    }
+  } else {
+    p_index[i] = int_array[id];
+  }  
+}
 
 void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k, 
                             int *__restrict p_index, int &n_groups,
@@ -466,26 +546,49 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
   int *int_array = new int[lookup_size];
   std::fill_n(int_array, lookup_size, 0);
   
-  int g = 0;
+  int g = 0;                    
   
   if(K == 1){
-    int id = 0;      
-    for(size_t i=0 ; i<n ; ++i){
-      id = is_x0_int ? px0_int[i] - x0_min : static_cast<int>(px0_dbl[i]) - x0_min;
-      
-      if(int_array[id] == 0){
-        // new item: we save the group id
-        ++g;
-        int_array[id] = g;
-        p_index[i] = g;
-        if(is_final){
-          vec_first_obs.push_back(i + 1);
+    int id = 0;
+    
+    if(is_x0_int){
+      if(x0->any_na){
+        int NA_value = x0->NA_value;
+        for(size_t i=0 ; i<n ; ++i){
+          if(px0_int[i] == NA_INTEGER){
+            id = NA_value;
+          } else {
+            id = px0_int[i] - x0_min;
+          }
+          
+          update_index_intarray_g_obs(id, i, g, int_array, p_index, is_final, vec_first_obs);
         }
       } else {
-        p_index[i] = int_array[id];
+        for(size_t i=0 ; i<n ; ++i){
+          id = px0_int[i] - x0_min;
+          update_index_intarray_g_obs(id, i, g, int_array, p_index, is_final, vec_first_obs);
+        }
+      }
+    } else {
+      // Double as int
+      if(x0->any_na){
+        int NA_value = x0->NA_value;
+        for(size_t i=0 ; i<n ; ++i){
+          if(std::isnan(px0_dbl[i])){
+            id = NA_value;
+          } else {
+            id = static_cast<int>(px0_dbl[i]) - x0_min;
+          }
+          
+          update_index_intarray_g_obs(id, i, g, int_array, p_index, is_final, vec_first_obs);
+        }
+      } else {
+        for(size_t i=0 ; i<n ; ++i){
+          id = static_cast<int>(px0_dbl[i]) - x0_min;
+          update_index_intarray_g_obs(id, i, g, int_array, p_index, is_final, vec_first_obs);
+        }
       }
     }
-    
   } else {
     
     int k1 = all_k[1];
@@ -526,9 +629,53 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       
       int offset = x0->x_range_bin;
       int v0 = 0, v1 = 0;
+      bool any_na0 = x0->any_na, any_na1 = x1->any_na;
+      int NA_value0 = x0->NA_value, NA_value1 = x1->NA_value;
+      // I think the ifs below can be unrolled by the compiler
       for(size_t i=0 ; i<n ; ++i){
-        v0 = is_x0_int ? px0_int[i] - x0_min : static_cast<int>(px0_dbl[i]) - x0_min;
-        v1 = is_x1_int ? px1_int[i] - x1_min : static_cast<int>(px1_dbl[i]) - x1_min;
+        if(is_x0_int){
+          if(any_na0){
+            if(px0_int[i] == NA_INTEGER){
+              v0 = NA_value0;
+            } else {
+              v0 = px0_int[i] - x0_min;
+            }
+          } else {
+            v0 = px0_int[i] - x0_min;
+          }
+        } else {
+          if(any_na0){
+            if(std::isnan(px0_dbl[i])){
+              v0 = NA_value0;
+            } else {
+              v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+            }
+          } else {
+            v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+          }
+        }
+        
+        if(is_x1_int){
+          if(any_na1){
+            if(px1_int[i] == NA_INTEGER){
+              v1 = NA_value1;
+            } else {
+              v1 = px1_int[i] - x1_min;
+            }
+          } else {
+            v1 = px1_int[i] - x1_min;
+          }
+        } else {
+          if(any_na1){
+            if(std::isnan(px1_dbl[i])){
+              v1 = NA_value1;
+            } else {
+              v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+            }
+          } else {
+            v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+          }
+        }
         
         sum_vec[i] = v0 + (v1 << offset);
       }
@@ -545,8 +692,31 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
         const bool is_int = x_type == T_INT;
         const int x_min = x->x_min;
         int vk = 0;
+        bool any_na = x->any_na;
+        int NA_value = x->NA_value;
         for(size_t i=0 ; i<n ; ++i){
-          vk = is_int ? px_int[i] - x_min : static_cast<int>(px_dbl[i]) - x_min;
+          // vk = is_int ? px_int[i] - x_min : static_cast<int>(px_dbl[i]) - x_min;
+          if(is_int){
+            if(any_na){
+              if(px_int[i] == NA_INTEGER){
+                vk = NA_value;
+              } else {
+                vk = px_int[i] - x_min;
+              }
+            } else {
+              vk = px_int[i] - x_min;
+            }
+          } else {
+            if(any_na){
+              if(std::isnan(px_dbl[i])){
+                vk = NA_value;
+              } else {
+                vk = static_cast<int>(px_dbl[i]) - x_min;
+              }
+            } else {
+              vk = static_cast<int>(px_dbl[i]) - x_min;
+            }
+          }
           sum_vec[i] += (vk << offset);
         }
         offset += x->x_range_bin;
@@ -563,9 +733,33 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       const int x_min = x->x_min;
       
       int id = 0;
-      int vk = 0;      
+      int vk = 0;
+      bool any_na = x->any_na;
+      int NA_value = x->NA_value;
       for(size_t i=0 ; i<n ; ++i){
-        vk = is_int ? px_int[i] - x_min : static_cast<int>(px_dbl[i]) - x_min;
+        // vk = is_int ? px_int[i] - x_min : static_cast<int>(px_dbl[i]) - x_min;
+        if(is_int){
+          if(any_na){
+            if(px_int[i] == NA_INTEGER){
+              vk = NA_value;
+            } else {
+              vk = px_int[i] - x_min;
+            }
+          } else {
+            vk = px_int[i] - x_min;
+          }
+        } else {
+          if(any_na){
+            if(std::isnan(px_dbl[i])){
+              vk = NA_value;
+            } else {
+              vk = static_cast<int>(px_dbl[i]) - x_min;
+            }
+          } else {
+            vk = static_cast<int>(px_dbl[i]) - x_min;
+          }
+        }        
+        
         id = sum_vec[i] + (vk << offset);
         
         if(int_array[id] == 0){
@@ -591,7 +785,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
 }
 
 // [[Rcpp::export]]
-SEXP cpp_to_index(SEXP x){
+SEXP cpp_to_index_bis(SEXP x){
   // x: vector or list of vectors of the same length (n)
   // returns:
   // - index: vector of length n, from 1 to the numberof unique values of x (g)
