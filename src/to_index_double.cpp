@@ -507,7 +507,7 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
   n_groups = g;
 }
 inline void update_index_intarray_g_obs(int id, size_t i, int &g, int * &int_array, 
-                                        int * &p_index, bool &is_final, vector<int> &vec_first_obs){
+                                        int *__restrict &p_index, bool &is_final, vector<int> &vec_first_obs){
   
   if(int_array[id] == 0){
     ++g;
@@ -604,10 +604,55 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       int id = 0;
       int offset = x0->x_range_bin;
       int v0 = 0, v1 = 0;
+      bool any_na0 = x0->any_na, any_na1 = x1->any_na;
+      int NA_value0 = x0->NA_value, NA_value1 = x1->NA_value;
       for(size_t i=0 ; i<n ; ++i){
+        // These two simple lines are replaced with the ugly `if` chunks, all because of NAs
+        // v0 = is_x0_int ? px0_int[i] - x0_min : static_cast<int>(px0_dbl[i]) - x0_min;
+        // v1 = is_x1_int ? px1_int[i] - x1_min : static_cast<int>(px1_dbl[i]) - x1_min;
+        if(is_x0_int){
+          if(any_na0){
+            if(px0_int[i] == NA_INTEGER){
+              v0 = NA_value0;
+            } else {
+              v0 = px0_int[i] - x0_min;
+            }
+          } else {
+            v0 = px0_int[i] - x0_min;
+          }
+        } else {
+          if(any_na0){
+            if(std::isnan(px0_dbl[i])){
+              v0 = NA_value0;
+            } else {
+              v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+            }
+          } else {
+            v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+          }
+        }
         
-        v0 = is_x0_int ? px0_int[i] - x0_min : static_cast<int>(px0_dbl[i]) - x0_min;
-        v1 = is_x1_int ? px1_int[i] - x1_min : static_cast<int>(px1_dbl[i]) - x1_min;
+        if(is_x1_int){
+          if(any_na1){
+            if(px1_int[i] == NA_INTEGER){
+              v1 = NA_value1;
+            } else {
+              v1 = px1_int[i] - x1_min;
+            }
+          } else {
+            v1 = px1_int[i] - x1_min;
+          }
+        } else {
+          if(any_na1){
+            if(std::isnan(px1_dbl[i])){
+              v1 = NA_value1;
+            } else {
+              v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+            }
+          } else {
+            v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+          }
+        }
         
         id = v0 + (v1 << offset);
         
