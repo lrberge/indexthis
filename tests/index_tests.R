@@ -30,8 +30,11 @@ base = list(
   complex = complex(real = round(rnorm(n, sd = 4)), imaginary = round(rnorm(n, sd = 4)))
 )
 
+####
+#### single vector ####
+####
 
-# single vector
+
 for(i_type in seq_along(base)){
   cat(names(base)[i_type])
   x = base[[i_type]]
@@ -56,15 +59,43 @@ for(i_type in seq_along(base)){
 
 
 
+####
+#### double vector ####
+####
+
+for(i_type in seq_along(base)){
+  cat(format(names(base))[i_type])
+  x = base[[i_type]]
+  for(j_type in seq_along(base)){
+    y = base[[j_type]]
+    for(any_na in c(FALSE, TRUE)){
+      cat(".")
+      if(any_na){
+        x[c(1, 32, 65, 125)] = NA
+        y[c(2, 33, 67, 200)] = NA
+      }
+      
+      index = to_index(x, y)
+      
+      x_char = paste0(x, "_", y)
+      index_r = unclass(as.factor(x_char))
+      
+      test(nrow(unique(data.frame(index, index_r))), max(index))
+    }
+  }
+  cat("\n")
+}
+
+max(index_r)
+m = data.frame(index, index_r, obs = seq_along(index))
+m = m[order(m$index), ]
+m$index_r_new = cumsum(!duplicated(m$index_r))
+m = m[order(m$obs), ]
+
+pblm = m[m$index != m$index_r_new, ] 
+
+data.frame(x[index == 27], y[index == 27])
+data.frame(x[index_r == 157], y[index_r == 157])
 
 
-
-
-
-
-
-
-
-
-
-
+data.frame(x[index == 26], y[index == 26])

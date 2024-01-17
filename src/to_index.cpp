@@ -150,6 +150,8 @@ r_vector::r_vector(SEXP x){
           }
         }
         
+        // Rcout << "x_min = " << x_min << ", x_max = " << x_max << " NA = " << any_na << "\n";
+        
         this->any_na = any_na;
         this->x_min = x_min;
         // +1 for the NAs
@@ -387,12 +389,30 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
     const bool is_x_int = x_type == T_INT;
     const int x_min = x->x_min;
     const int offset = n_groups_bin;
-    int id = 0;      
+    int id = 0;
+    const bool any_na = x->any_na;
+    const int NA_value = x->NA_value;
     for(size_t i=0 ; i<n ; ++i){
       if(is_x_int){
-        id = p_index_in[i] + ((px_int[i] - x_min) << offset);
+        if(any_na){
+          if(px_int[i] == NA_INTEGER){
+            id = p_index_in[i] + ((NA_value) << offset);
+          } else {
+            id = p_index_in[i] + ((px_int[i] - x_min) << offset);
+          }
+        } else {
+          id = p_index_in[i] + ((px_int[i] - x_min) << offset);
+        }
       } else {
-        id = p_index_in[i] + ((static_cast<int>(px_dbl[i]) - x_min) << offset);
+        if(any_na){
+          if(px_int[i] == NA_INTEGER){
+            id = p_index_in[i] + ((NA_value) << offset);
+          } else {
+            id = p_index_in[i] + ((static_cast<int>(px_dbl[i]) - x_min) << offset);
+          }
+        } else {
+          id = p_index_in[i] + ((static_cast<int>(px_dbl[i]) - x_min) << offset);
+        }
       }      
       
       if(int_array[id] == 0){
