@@ -80,8 +80,10 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
   check_arg(items.join, "character scalar")
   
   check_arg(list, "NULL list")
+  IS_DOT = TRUE
   if (!is.null(list)) {
     dots = list
+    IS_DOT = FALSE
   } else {
     if(!internal){
       check_arg(..., "vector mbt")
@@ -122,21 +124,35 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
     items = NULL
     if(items.df){
       # Putting into a DF => we take care of names
-      mc_dots = match.call(expand.dots = FALSE)[["..."]]
-      n_dots = length(mc_dots)
-      mc_dots_names = names(mc_dots)
-      if(is.null(mc_dots_names)) mc_dots_names = character(n_dots)
-
-      my_names = character(n_dots)
-      for(q in 1:n_dots){
-        if(nchar(mc_dots_names[q]) > 0){
-          my_names[q] = mc_dots_names[q]
-        } else {
-          my_names[q] = deparse(mc_dots[[q]])[1]
+      user_names = names(dots)
+      if(is.null(user_names)){
+        user_names = character(Q)
+      }
+      
+      if(IS_DOT){
+        mc_dots = match.call(expand.dots = FALSE)[["..."]]
+      }
+      
+      for(q in 1:Q){
+        if(nchar(user_names[q]) == 0){
+          is_done = FALSE
+          if(IS_DOT){
+            mcq = mc_dots[[q]]
+            if(is.name(mcq)){
+              user_names[q] = as.character(mcq)[1]
+              is_done = TRUE
+            } else if(is.call(mcq) && as.character(mcq[[1]])[1] == "$"){
+              user_names[q] = as.character(mcq[[3]])[1]
+              is_done = TRUE
+            }
+          }
+          if(!is_done){
+            user_names[q] = paste0("x", q)
+          }          
         }
       }
 
-      names(items_unik) = my_names
+      names(items_unik) = user_names
 
       items = as.data.frame(items_unik)
       row.names(items) = 1:nrow(items)
