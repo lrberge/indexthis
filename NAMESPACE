@@ -4,7 +4,7 @@ useDynLib(indexthis, .registration = TRUE)
 # EXPORT
 #
 
-export(cpp_to_index)
+export(to_index)
 
 #
 # IMPORT
