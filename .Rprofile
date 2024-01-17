@@ -5,7 +5,7 @@ if (interactive() && Sys.getenv("RSTUDIO") == "") {
   Sys.setenv(TERM_PROGRAM = "vscode")
   HOME = if(.Platform$OS.type == "windows") "USERPROFILE" else "HOME"
   my_file = file.path(Sys.getenv(HOME), ".vscode-R", "init.R")
-  if(file.exists()){
+  if(file.exists(my_file)){
     source(my_file)
     options(vsc.rstudioapi = TRUE)
   }
