@@ -4,7 +4,11 @@
 # ~: Main tests
 #------------------------------------------------------------------------------#
 
+# R -d "valgrind --leak-check=full"
 
+# Rcpp::sourceCpp("src/to_index.cpp")
+# source("R/to_index.R") ; source("R/test_funs.R")
+# library(dreamerr)
 
 n = 500
 
@@ -36,7 +40,7 @@ base = list(
 
 
 for(i_type in seq_along(base)){
-  cat(names(base)[i_type])
+  cat(format(names(base))[i_type])
   x = base[[i_type]]
   for(any_na in c(FALSE, TRUE)){
     cat(".")
@@ -65,11 +69,14 @@ for(i_type in seq_along(base)){
 
 for(i_type in seq_along(base)){
   cat(format(names(base))[i_type])
-  x = base[[i_type]]
+  x_raw = base[[i_type]]
   for(j_type in seq_along(base)){
-    y = base[[j_type]]
+    cat("\n  - ", format(names(base))[j_type])
+    y_raw = base[[j_type]]
     for(any_na in c(FALSE, TRUE)){
       cat(".")
+      x = x_raw
+      y = y_raw
       if(any_na){
         x[c(1, 32, 65, 125)] = NA
         y[c(2, 33, 67, 200)] = NA
@@ -86,19 +93,45 @@ for(i_type in seq_along(base)){
   cat("\n")
 }
 
-max(index_r)
-m = data.frame(index, index_r, obs = seq_along(index))
-m = m[order(m$index), ]
-m$index_r_new = cumsum(!duplicated(m$index_r))
-m = m[order(m$obs), ]
+####
+#### triple vector ####
+####
 
-pblm = m[m$index != m$index_r_new, ] 
+for(i_type in seq_along(base)){
+  
+  cat(format(names(base))[i_type])
+  x_raw = base[[i_type]]
+  
+  for(j_type in seq_along(base)){
+    
+    y_raw = base[[j_type]]
+    
+    for(k_type in seq_along(base)){
+      
+      z_raw = base[[k_type]]
+      
+      for(any_na in c(FALSE, TRUE)){
+        cat(".")
+        
+        x = x_raw
+        y = y_raw
+        z = z_raw
+        
+        if(any_na){
+          x[c(1, 32, 65, 125)] = NA
+          y[c(2, 33, 67, 200)] = NA
+          z[c(8, 33, 50, 200)] = NA
+        }
+        
+        index = to_index(x, y, z)
+        
+        x_char = paste0(x, "_", y, "_", z)
+        index_r = unclass(as.factor(x_char))
+        
+        test(nrow(unique(data.frame(index, index_r))), max(index))
+      }
+    }
+  }
+  cat("\n")
+}
 
-data.frame(x[index == 27], y[index == 27])
-data.frame(x[index_r == 157], y[index_r == 157])
-
-
-data.frame(x[index == 26], y[index == 26])
-
-
-x_dbl = cpp_date_double(x)

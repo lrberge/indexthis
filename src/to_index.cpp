@@ -262,8 +262,8 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
   // - assume hash(value) leads to ID
   // - then hashed_obs_vec[ID] is the observation id of the first observation with that hash
   // - note that using an array makes the algo twice faster
-  int *hashed_obs_vec = new int[larger_n];
-  std::fill_n(hashed_obs_vec, larger_n, 0);
+  int *hashed_obs_vec = new int[larger_n + 1];
+  std::fill_n(hashed_obs_vec, larger_n + 1, 0);
   
   const int *px_int = (int *) x->px_int;
   const double *px_dbl = (double *) x->px_dbl;
@@ -462,8 +462,8 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
     // - assume hash(value) leads to ID
     // - then hashed_obs_vec[ID] is the observation id of the first observation with that hash
     // - note that using an array makes the algo twice faster
-    int *hashed_obs_vec = new int[larger_n];
-    std::fill_n(hashed_obs_vec, larger_n, 0);
+    int *hashed_obs_vec = new int[larger_n + 1];
+    std::fill_n(hashed_obs_vec, larger_n + 1, 0);
     
     union double2int u_d2int;
     uint32_t id = 0;
@@ -535,7 +535,7 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
         } else {
           u_d2int.dbl = px_dbl[i];
           id = hash_double(u_d2int.uint[0] + u_d2int.uint[1], p_index_in[i], shifter);
-        }      
+        }
         
         bool does_exist = false;
         while(hashed_obs_vec[id] != 0){
@@ -990,8 +990,8 @@ SEXP cpp_double_factor_to_index(SEXP x1, SEXP x2){
   if(shifter < 8) shifter = 8;
   size_t larger_n = std::pow(2, shifter);
   
-  int *hashed_obs_vec = new int[larger_n];
-  std::fill_n(hashed_obs_vec, larger_n, 0);
+  int *hashed_obs_vec = new int[larger_n + 1];
+  std::fill_n(hashed_obs_vec, larger_n + 1, 0);
   
   int *p_lab_index = new int[n_labels];
   
