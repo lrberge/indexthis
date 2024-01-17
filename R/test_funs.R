@@ -469,7 +469,7 @@ run_tests = function(chunk, from = 1, source = FALSE){
           assign(var, get(var, env), parent.frame())
       }
       
-      command = .sma("rstudioapi::navigateToFile({Q?my_file_full}, {line_in_file})")
+      command = string_magic("rstudioapi::navigateToFile({Q?my_file_full}, {line_in_file})")
       command = str2lang(command)
       
       eval(command)

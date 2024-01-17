@@ -14,5 +14,5 @@ import(dreamerr)
 
 importFrom(Rcpp, evalCpp)
 
-
+importFrom(stringmagic, string_is, string_magic, string_fill)
 
