@@ -111,16 +111,19 @@ r_vector::r_vector(SEXP x){
       if(TYPEOF(x) == INTSXP){
         int *px = INTEGER(x);
         int x_min = px[0], x_max = px[0], x_tmp;
-        bool any_na = false;
+        bool any_na = x_min == NA_INTEGER;
         for(int i=1 ; i<n ; ++i){
           x_tmp = px[i];
           
-          if(x_tmp == NA_INTEGER){
-            any_na = true;
-          } else if(x_tmp > x_max){
+          if(x_tmp > x_max){
             x_max = x_tmp;
           } else if(x_tmp < x_min){
-            x_min = x_tmp;
+            // NA integer is the smallest int, defined as -2147483648
+            if(x_tmp == NA_INTEGER){
+              any_na = true;
+            } else {
+              x_min = x_tmp;
+            }            
           }
         }
         
