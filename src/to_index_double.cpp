@@ -600,6 +600,30 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
     const bool is_x1_int = x1_type == T_INT;   
     const int x1_min = x1->x_min;
     
+    // ad hoc macro to update v depending on the vector type
+    #define UPDATE_V(is_int, any_na, px_int, px_dbl, vk, NA_value, x_min)  \
+      if(is_int){                                                          \
+        if(any_na){                                                        \
+          if(px_int[i] == NA_INTEGER){                                     \
+            vk = NA_value;                                                 \
+          } else {                                                         \
+            vk = px_int[i] - x_min;                                        \
+          }                                                                \
+        } else {                                                           \
+          vk = px_int[i] - x_min;                                          \
+        }                                                                  \
+      } else {                                                             \
+        if(any_na){                                                        \
+          if(std::isnan(px_dbl[i])){                                       \
+            vk = NA_value;                                                 \
+          } else {                                                         \
+            vk = static_cast<int>(px_dbl[i]) - x_min;                      \
+          }                                                                \
+        } else {                                                           \
+          vk = static_cast<int>(px_dbl[i]) - x_min;                        \
+        }                                                                  \
+      }
+    
     if(K == 2){
       int id = 0;
       int offset = x0->x_range_bin;
@@ -610,49 +634,54 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
         // These two simple lines are replaced with the ugly `if` chunks, all because of NAs
         // v0 = is_x0_int ? px0_int[i] - x0_min : static_cast<int>(px0_dbl[i]) - x0_min;
         // v1 = is_x1_int ? px1_int[i] - x1_min : static_cast<int>(px1_dbl[i]) - x1_min;
-        if(is_x0_int){
-          if(any_na0){
-            if(px0_int[i] == NA_INTEGER){
-              v0 = NA_value0;
-            } else {
-              v0 = px0_int[i] - x0_min;
-            }
-          } else {
-            v0 = px0_int[i] - x0_min;
-          }
-        } else {
-          if(any_na0){
-            if(std::isnan(px0_dbl[i])){
-              v0 = NA_value0;
-            } else {
-              v0 = static_cast<int>(px0_dbl[i]) - x0_min;
-            }
-          } else {
-            v0 = static_cast<int>(px0_dbl[i]) - x0_min;
-          }
-        }
         
-        if(is_x1_int){
-          if(any_na1){
-            if(px1_int[i] == NA_INTEGER){
-              v1 = NA_value1;
-            } else {
-              v1 = px1_int[i] - x1_min;
-            }
-          } else {
-            v1 = px1_int[i] - x1_min;
-          }
-        } else {
-          if(any_na1){
-            if(std::isnan(px1_dbl[i])){
-              v1 = NA_value1;
-            } else {
-              v1 = static_cast<int>(px1_dbl[i]) - x1_min;
-            }
-          } else {
-            v1 = static_cast<int>(px1_dbl[i]) - x1_min;
-          }
-        }
+        UPDATE_V(is_x0_int, any_na0, px0_int, px0_dbl, v0, NA_value0, x0_min)
+        
+        UPDATE_V(is_x1_int, any_na1, px1_int, px1_dbl, v1, NA_value1, x1_min)
+        
+        // if(is_x0_int){
+        //   if(any_na0){
+        //     if(px0_int[i] == NA_INTEGER){
+        //       v0 = NA_value0;
+        //     } else {
+        //       v0 = px0_int[i] - x0_min;
+        //     }
+        //   } else {
+        //     v0 = px0_int[i] - x0_min;
+        //   }
+        // } else {
+        //   if(any_na0){
+        //     if(std::isnan(px0_dbl[i])){
+        //       v0 = NA_value0;
+        //     } else {
+        //       v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+        //     }
+        //   } else {
+        //     v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+        //   }
+        // }
+        
+        // if(is_x1_int){
+        //   if(any_na1){
+        //     if(px1_int[i] == NA_INTEGER){
+        //       v1 = NA_value1;
+        //     } else {
+        //       v1 = px1_int[i] - x1_min;
+        //     }
+        //   } else {
+        //     v1 = px1_int[i] - x1_min;
+        //   }
+        // } else {
+        //   if(any_na1){
+        //     if(std::isnan(px1_dbl[i])){
+        //       v1 = NA_value1;
+        //     } else {
+        //       v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+        //     }
+        //   } else {
+        //     v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+        //   }
+        // }
         
         id = v0 + (v1 << offset);
         
@@ -678,49 +707,54 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       int NA_value0 = x0->NA_value, NA_value1 = x1->NA_value;
       // I think the ifs below can be unrolled by the compiler
       for(size_t i=0 ; i<n ; ++i){
-        if(is_x0_int){
-          if(any_na0){
-            if(px0_int[i] == NA_INTEGER){
-              v0 = NA_value0;
-            } else {
-              v0 = px0_int[i] - x0_min;
-            }
-          } else {
-            v0 = px0_int[i] - x0_min;
-          }
-        } else {
-          if(any_na0){
-            if(std::isnan(px0_dbl[i])){
-              v0 = NA_value0;
-            } else {
-              v0 = static_cast<int>(px0_dbl[i]) - x0_min;
-            }
-          } else {
-            v0 = static_cast<int>(px0_dbl[i]) - x0_min;
-          }
-        }
         
-        if(is_x1_int){
-          if(any_na1){
-            if(px1_int[i] == NA_INTEGER){
-              v1 = NA_value1;
-            } else {
-              v1 = px1_int[i] - x1_min;
-            }
-          } else {
-            v1 = px1_int[i] - x1_min;
-          }
-        } else {
-          if(any_na1){
-            if(std::isnan(px1_dbl[i])){
-              v1 = NA_value1;
-            } else {
-              v1 = static_cast<int>(px1_dbl[i]) - x1_min;
-            }
-          } else {
-            v1 = static_cast<int>(px1_dbl[i]) - x1_min;
-          }
-        }
+        UPDATE_V(is_x0_int, any_na0, px0_int, px0_dbl, v0, NA_value0, x0_min)
+        
+        UPDATE_V(is_x1_int, any_na1, px1_int, px1_dbl, v1, NA_value1, x1_min)
+        
+        // if(is_x0_int){
+        //   if(any_na0){
+        //     if(px0_int[i] == NA_INTEGER){
+        //       v0 = NA_value0;
+        //     } else {
+        //       v0 = px0_int[i] - x0_min;
+        //     }
+        //   } else {
+        //     v0 = px0_int[i] - x0_min;
+        //   }
+        // } else {
+        //   if(any_na0){
+        //     if(std::isnan(px0_dbl[i])){
+        //       v0 = NA_value0;
+        //     } else {
+        //       v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+        //     }
+        //   } else {
+        //     v0 = static_cast<int>(px0_dbl[i]) - x0_min;
+        //   }
+        // }
+        
+        // if(is_x1_int){
+        //   if(any_na1){
+        //     if(px1_int[i] == NA_INTEGER){
+        //       v1 = NA_value1;
+        //     } else {
+        //       v1 = px1_int[i] - x1_min;
+        //     }
+        //   } else {
+        //     v1 = px1_int[i] - x1_min;
+        //   }
+        // } else {
+        //   if(any_na1){
+        //     if(std::isnan(px1_dbl[i])){
+        //       v1 = NA_value1;
+        //     } else {
+        //       v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+        //     }
+        //   } else {
+        //     v1 = static_cast<int>(px1_dbl[i]) - x1_min;
+        //   }
+        // }
         
         sum_vec[i] = v0 + (v1 << offset);
       }
@@ -729,81 +763,88 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       offset += x1->x_range_bin;
       for(int ind=2 ; ind<K-1 ; ++ind){
         int k = all_k[ind];
-        r_vector *x = &all_vecs[k];
-        const int *px_int = (int *) x->px_int;
-        const double *px_dbl = (double *) x->px_dbl;
+        r_vector *xk = &all_vecs[k];
+        const int *pxk_int = (int *) xk->px_int;
+        const double *pxk_dbl = (double *) xk->px_dbl;
         
-        const int x_type = x->type;
-        const bool is_int = x_type == T_INT;
-        const int x_min = x->x_min;
+        const int x_type = xk->type;
+        const bool is_xk_int = x_type == T_INT;
+        const int xk_min = xk->x_min;
         int vk = 0;
-        bool any_na = x->any_na;
-        int NA_value = x->NA_value;
+        bool any_nak = xk->any_na;
+        int NA_valuek = xk->NA_value;
         for(size_t i=0 ; i<n ; ++i){
-          // vk = is_int ? px_int[i] - x_min : static_cast<int>(px_dbl[i]) - x_min;
-          if(is_int){
-            if(any_na){
-              if(px_int[i] == NA_INTEGER){
-                vk = NA_value;
-              } else {
-                vk = px_int[i] - x_min;
-              }
-            } else {
-              vk = px_int[i] - x_min;
-            }
-          } else {
-            if(any_na){
-              if(std::isnan(px_dbl[i])){
-                vk = NA_value;
-              } else {
-                vk = static_cast<int>(px_dbl[i]) - x_min;
-              }
-            } else {
-              vk = static_cast<int>(px_dbl[i]) - x_min;
-            }
-          }
+          // vk = is_xk_int ? pxk_int[i] - xk_min : static_cast<int>(pxk_dbl[i]) - xk_min;
+          
+          UPDATE_V(is_xk_int, any_nak, pxk_int, pxk_dbl, vk, NA_valuek, xk_min)
+          
+          
+          // if(is_xk_int){
+          //   if(any_nak){
+          //     if(pxk_int[i] == NA_INTEGER){
+          //       vk = NA_valuek;
+          //     } else {
+          //       vk = pxk_int[i] - xk_min;
+          //     }
+          //   } else {
+          //     vk = pxk_int[i] - xk_min;
+          //   }
+          // } else {
+          //   if(any_nak){
+          //     if(std::isnan(pxk_dbl[i])){
+          //       vk = NA_valuek;
+          //     } else {
+          //       vk = static_cast<int>(pxk_dbl[i]) - xk_min;
+          //     }
+          //   } else {
+          //     vk = static_cast<int>(pxk_dbl[i]) - xk_min;
+          //   }
+          // }
           sum_vec[i] += (vk << offset);
         }
-        offset += x->x_range_bin;
+        offset += xk->x_range_bin;
       }
             
       // last element + group creation
       int k = all_k[K - 1];
-      r_vector *x = &all_vecs[k];
-      const int *px_int = (int *) x->px_int;
-      const double *px_dbl = (double *) x->px_dbl;
+      r_vector *xk = &all_vecs[k];
+      const int *pxk_int = (int *) xk->px_int;
+      const double *pxk_dbl = (double *) xk->px_dbl;
       
-      const int x_type = x->type;
-      const bool is_int = x_type == T_INT;
-      const int x_min = x->x_min;
+      const int x_type = xk->type;
+      const bool is_xk_int = x_type == T_INT;
+      const int xk_min = xk->x_min;
       
       int id = 0;
       int vk = 0;
-      bool any_na = x->any_na;
-      int NA_value = x->NA_value;
+      bool any_nak = xk->any_na;
+      int NA_valuek = xk->NA_value;
       for(size_t i=0 ; i<n ; ++i){
-        // vk = is_int ? px_int[i] - x_min : static_cast<int>(px_dbl[i]) - x_min;
-        if(is_int){
-          if(any_na){
-            if(px_int[i] == NA_INTEGER){
-              vk = NA_value;
-            } else {
-              vk = px_int[i] - x_min;
-            }
-          } else {
-            vk = px_int[i] - x_min;
-          }
-        } else {
-          if(any_na){
-            if(std::isnan(px_dbl[i])){
-              vk = NA_value;
-            } else {
-              vk = static_cast<int>(px_dbl[i]) - x_min;
-            }
-          } else {
-            vk = static_cast<int>(px_dbl[i]) - x_min;
-          }
-        }        
+        // vk = is_xk_int ? pxk_int[i] - xk_min : static_cast<int>(pxk_dbl[i]) - xk_min;
+        
+        UPDATE_V(is_xk_int, any_nak, pxk_int, pxk_dbl, vk, NA_valuek, xk_min)
+        
+        // if(is_xk_int){
+        //   if(any_nak){
+        //     if(pxk_int[i] == NA_INTEGER){
+        //       vk = NA_valuek;
+        //     } else {
+        //       vk = pxk_int[i] - xk_min;
+        //     }
+        //   } else {
+        //     vk = pxk_int[i] - xk_min;
+        //   }
+        // } else {
+        //   if(any_nak){
+        //     if(std::isnan(pxk_dbl[i])){
+        //       vk = NA_valuek;
+        //     } else {
+        //       vk = static_cast<int>(pxk_dbl[i]) - xk_min;
+        //     }
+        //   } else {
+        //     vk = static_cast<int>(pxk_dbl[i]) - xk_min;
+        //   }
+        // }
         
         id = sum_vec[i] + (vk << offset);
         
