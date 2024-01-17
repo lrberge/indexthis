@@ -99,3 +99,6 @@ data.frame(x[index_r == 157], y[index_r == 157])
 
 
 data.frame(x[index == 26], y[index == 26])
+
+
+x_dbl = cpp_date_double(x)

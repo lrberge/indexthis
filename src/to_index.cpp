@@ -171,8 +171,6 @@ r_vector::r_vector(SEXP x){
             }
           }
           
-          // Rcout << "x_min = " << x_min << ", x_max = " << x_max << " NA = " << any_na << "\n";
-          
           this->any_na = any_na;
           this->x_min = x_min;
           // +1 for the NAs
@@ -212,8 +210,6 @@ r_vector::r_vector(SEXP x){
         // conversion succeeded
         this->type = T_STR;
         this->px_intptr = (intptr_t *) STRING_PTR(this->x_conv);
-        
-        Rcout << "conversion to character\n";
         
       } else {
         Rf_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
