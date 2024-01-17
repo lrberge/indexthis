@@ -98,6 +98,23 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
   if(length(unique(n_all)) != 1){
     stopi("All elements in `...` should be of the same length (current lenghts are {enum?n_all}).")
   }
+  
+  if(n == 0){
+    res = integer(0)
+    if(items.out){
+      items = integer(0)
+      if(items.df){
+        items = data.frame()
+      }
+      if(out.list){
+        res = list(index = res, items = items)
+      } else {
+        attr(res, "items") = items
+      }
+    }
+    
+    return(res)
+  }
 
   #
   # Creating the ID
