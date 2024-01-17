@@ -424,7 +424,7 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
         }
       } else {
         if(any_na){
-          if(px_int[i] == NA_INTEGER){
+          if(std::isnan(px_dbl[i])){
             id = p_index_in[i] + ((NA_value) << offset);
           } else {
             id = p_index_in[i] + ((static_cast<int>(px_dbl[i]) - x_min) << offset);
