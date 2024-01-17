@@ -196,18 +196,6 @@ to_index_internal = function(x){
     check_arg(x, "list")
   }
   
-  for (i in seq_along(x)) {
-    xi = x[[i]]
-    
-    if (!is.atomic(xi) || !is.null(dim(xi))) {
-      stopi("The {nth?i} element is not a vector, instead it is of class {enum?class(x[[i]])}.")
-    }
-    
-    if (!is.numeric(xi) && !is.character(xi) && !is.factor(xi)) {
-      x[[i]] = as.character(xi)
-    }
-  }
-  
   return(cpp_to_index(x))
 }
 
