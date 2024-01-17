@@ -16,10 +16,6 @@ using std::vector;
 // The current implementation is very different from the previous authors
 //
 
-// to do:
-// handle NAs in ints/double as int
-// handle factors
-
 enum {T_INT, T_DBL_INT, T_DBL, T_STR};
 
 union double2int {
@@ -628,8 +624,8 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       int id = 0;
       int offset = x0->x_range_bin;
       int v0 = 0, v1 = 0;
-      bool any_na_x0 = x0->any_na, any_na_x1 = x1->any_na;
-      int NA_value_x0 = x0->NA_value, NA_value_x1 = x1->NA_value;
+      const bool any_na_x0 = x0->any_na, any_na_x1 = x1->any_na;
+      const int NA_value_x0 = x0->NA_value, NA_value_x1 = x1->NA_value;
       for(size_t i=0 ; i<n ; ++i){
         
         UPDATE_V(is_x0_int, any_na_x0, px0_int, px0_dbl, v0, NA_value_x0, x0_min)
@@ -655,11 +651,11 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       
       int offset = x0->x_range_bin;
       int v0 = 0, v1 = 0;
-      bool any_na_x0 = x0->any_na, any_na_x1 = x1->any_na;
-      int NA_value_x0 = x0->NA_value, NA_value_x1 = x1->NA_value;
+      const bool any_na_x0 = x0->any_na, any_na_x1 = x1->any_na;
+      const int NA_value_x0 = x0->NA_value, NA_value_x1 = x1->NA_value;
       // the `if`s below in the macro are *not* unrolled by the compiler, sigh
-      // unrolling them by hand is too costly and will create unreadable code. 
-      // But, on the benchmarks, we could gain 15% perf.
+      // unrolling them by hand is too costly and will create unreadable code (16 differents cases!!!!, it would be over 300 lines of code!). 
+      // But, on the benchmarks, we could gain 15% perf. So be it.
       for(size_t i=0 ; i<n ; ++i){
         UPDATE_V(is_x0_int, any_na_x0, px0_int, px0_dbl, v0, NA_value_x0, x0_min)
         UPDATE_V(is_x1_int, any_na_x1, px1_int, px1_dbl, v1, NA_value_x1, x1_min)
@@ -679,8 +675,8 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
         const bool is_xk_int = x_type == T_INT;
         const int xk_min = xk->x_min;
         int vk = 0;
-        bool any_na_xk = xk->any_na;
-        int NA_value_xk = xk->NA_value;
+        const bool any_na_xk = xk->any_na;
+        const int NA_value_xk = xk->NA_value;
         for(size_t i=0 ; i<n ; ++i){
           UPDATE_V(is_xk_int, any_na_xk, pxk_int, pxk_dbl, vk, NA_value_xk, xk_min)
           
@@ -701,8 +697,8 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       
       int id = 0;
       int vk = 0;
-      bool any_na_xk = xk->any_na;
-      int NA_value_xk = xk->NA_value;
+      const bool any_na_xk = xk->any_na;
+      const int NA_value_xk = xk->NA_value;
       for(size_t i=0 ; i<n ; ++i){
         
         UPDATE_V(is_xk_int, any_na_xk, pxk_int, pxk_dbl, vk, NA_value_xk, xk_min)
