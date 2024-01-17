@@ -10,24 +10,37 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// cpp_to_index
-SEXP cpp_to_index(SEXP x);
-RcppExport SEXP _to_index_cpp_to_index(SEXP xSEXP) {
+// cpp_to_index_bis
+SEXP cpp_to_index_bis(SEXP x);
+RcppExport SEXP _indexthis_cpp_to_index_bis(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_to_index(x));
+    rcpp_result_gen = Rcpp::wrap(cpp_to_index_bis(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_double_factor_to_index
+SEXP cpp_double_factor_to_index(SEXP x1, SEXP x2);
+RcppExport SEXP _indexthis_cpp_double_factor_to_index(SEXP x1SEXP, SEXP x2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x1(x1SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type x2(x2SEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_double_factor_to_index(x1, x2));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_to_index_cpp_to_index", (DL_FUNC) &_to_index_cpp_to_index, 1},
+    {"_indexthis_cpp_to_index_bis", (DL_FUNC) &_indexthis_cpp_to_index_bis, 1},
+    {"_indexthis_cpp_double_factor_to_index", (DL_FUNC) &_indexthis_cpp_double_factor_to_index, 2},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_to_index(DllInfo *dll) {
+RcppExport void R_init_indexthis(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

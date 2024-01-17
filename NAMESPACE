@@ -1,4 +1,4 @@
-useDynLib(to_index, .registration = TRUE)
+useDynLib(indexthis, .registration = TRUE)
 
 #
 # EXPORT
