@@ -10,14 +10,14 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// cpp_to_index_bis
-SEXP cpp_to_index_bis(SEXP x);
-RcppExport SEXP _indexthis_cpp_to_index_bis(SEXP xSEXP) {
+// cpp_to_index
+SEXP cpp_to_index(SEXP x);
+RcppExport SEXP _indexthis_cpp_to_index(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_to_index_bis(x));
+    rcpp_result_gen = Rcpp::wrap(cpp_to_index(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -35,7 +35,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_indexthis_cpp_to_index_bis", (DL_FUNC) &_indexthis_cpp_to_index_bis, 1},
+    {"_indexthis_cpp_to_index", (DL_FUNC) &_indexthis_cpp_to_index, 1},
     {"_indexthis_cpp_double_factor_to_index", (DL_FUNC) &_indexthis_cpp_double_factor_to_index, 2},
     {NULL, NULL, 0}
 };
