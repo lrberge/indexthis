@@ -81,36 +81,64 @@ r_vector::r_vector(SEXP x){
     this->type = T_STR;
     this->px_intptr = (intptr_t *) STRING_PTR(x);
     
-  } else {
-    
-    // we check if the value is numeric with is.numeric called from R
-    // the Rf_isNumeric we have access to here is not adequate since it returns
-    // TRUE for dates (just checks if type is REALSXP or INTSXP)
-    
-    bool is_numeric = Rf_isNumeric(x);
-    if(is_numeric){
-      // SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("is.numeric"), x));
-      // int any_error;
-      // SEXP is_num_result = R_tryEval(call_as_character, R_GlobalEnv, &any_error);
-      // UNPROTECT(1);
-      // is_numeric = LOGICAL(is_num_result)[0];
-    }
-    
-    if(is_numeric || Rf_isFactor(x) || TYPEOF(x) == LGLSXP){
+  } else if(Rf_isNumeric(x) || Rf_isFactor(x) || TYPEOF(x) == LGLSXP){
+      
+    if(TYPEOF(x) == REALSXP){
+      // we check if the underlying structure is int
+      this->px_dbl = REAL(x);
+      IS_INT = true;
+      double *px = REAL(x);
+      double x_min = 0, x_max = 0, x_tmp;
+      
+      // taking care of NA corner cases
+      int i_start = 0;
+      while(i_start < n && std::isnan(px[i_start])){
+        ++i_start;
+      }
+      
+      bool any_na = i_start > 0;
+      if(i_start < n){
+        x_min = px[i_start];
+        x_max = px[i_start];
         
-      if(TYPEOF(x) == REALSXP){
-        // we check if the underlying structure is int
-        this->px_dbl = REAL(x);
-        IS_INT = true;
-        double *px = REAL(x);
-        double x_min = 0, x_max = 0, x_tmp;
+        for(int i=i_start ; i<n ; ++i){
+          x_tmp = px[i];
+          
+          if(std::isnan(x_tmp)){
+            any_na = true;
+          } else if(!(x_tmp == (int) x_tmp)){
+            IS_INT = false;
+            break;
+          } else if(x_tmp > x_max){
+            x_max = x_tmp;
+          } else if(x_tmp < x_min){
+            x_min = x_tmp;
+          }
+        }
+      }      
+      
+      this->any_na = any_na;
+
+      this->x_min = static_cast<int>(x_min);
+      // +1 for the NAs
+      this->x_range = x_max - x_min + 2;
+      
+      this->type = IS_INT ? T_DBL_INT : T_DBL;
+    } else {
+      // logical, factor and integer are all integers
+      IS_INT = true;
+      this->px_int = INTEGER(x);
+      this->type = T_INT;
+      
+      if(TYPEOF(x) == INTSXP){
+        int *px = INTEGER(x);
+        int x_min = 0, x_max = 0, x_tmp;
         
         // taking care of NA corner cases
         int i_start = 0;
-        while(i_start < n && std::isnan(px[i_start])){
+        while(i_start < n && px[i_start] == NA_INTEGER){
           ++i_start;
         }
-        
         bool any_na = i_start > 0;
         if(i_start < n){
           x_min = px[i_start];
@@ -119,115 +147,71 @@ r_vector::r_vector(SEXP x){
           for(int i=i_start ; i<n ; ++i){
             x_tmp = px[i];
             
-            if(std::isnan(x_tmp)){
-              any_na = true;
-            } else if(!(x_tmp == (int) x_tmp)){
-              IS_INT = false;
-              break;
-            } else if(x_tmp > x_max){
+            if(x_tmp > x_max){
               x_max = x_tmp;
             } else if(x_tmp < x_min){
-              x_min = x_tmp;
+              // NA integer is the smallest int, defined as -2147483648
+              if(x_tmp == NA_INTEGER){
+                any_na = true;
+              } else {
+                x_min = x_tmp;
+              }            
             }
           }
-        }      
+        }
         
         this->any_na = any_na;
-
-        this->x_min = static_cast<int>(x_min);
+        this->x_min = x_min;
         // +1 for the NAs
         this->x_range = x_max - x_min + 2;
-        
-        this->type = IS_INT ? T_DBL_INT : T_DBL;
+      } else if(TYPEOF(x) == LGLSXP){
+        this->x_min = 0;
+        // 0, 1, NA
+        this->x_range = 3;
       } else {
-        // logical, factor and integer are all integers
-        IS_INT = true;
-        this->px_int = INTEGER(x);
-        this->type = T_INT;
-        
-        if(TYPEOF(x) == INTSXP){
-          int *px = INTEGER(x);
-          int x_min = 0, x_max = 0, x_tmp;
-          
-          // taking care of NA corner cases
-          int i_start = 0;
-          while(i_start < n && px[i_start] == NA_INTEGER){
-            ++i_start;
-          }
-          bool any_na = i_start > 0;
-          if(i_start < n){
-            x_min = px[i_start];
-            x_max = px[i_start];
-            
-            for(int i=i_start ; i<n ; ++i){
-              x_tmp = px[i];
-              
-              if(x_tmp > x_max){
-                x_max = x_tmp;
-              } else if(x_tmp < x_min){
-                // NA integer is the smallest int, defined as -2147483648
-                if(x_tmp == NA_INTEGER){
-                  any_na = true;
-                } else {
-                  x_min = x_tmp;
-                }            
-              }
-            }
-          }
-          
-          this->any_na = any_na;
-          this->x_min = x_min;
-          // +1 for the NAs
-          this->x_range = x_max - x_min + 2;
-        } else if(TYPEOF(x) == LGLSXP){
-          this->x_min = 0;
-          // 0, 1, NA
-          this->x_range = 3;
-        } else {
-          // factor
-          SEXP labels = Rf_getAttrib(x, R_LevelsSymbol);
-          // factors always start at 1
-          this->x_min = 1;
-          // we add 1 for the NAs
-          this->x_range = Rf_length(labels) + 1;
-        }
+        // factor
+        SEXP labels = Rf_getAttrib(x, R_LevelsSymbol);
+        // factors always start at 1
+        this->x_min = 1;
+        // we add 1 for the NAs
+        this->x_range = Rf_length(labels) + 1;
+      }
+    }
+    
+    if(IS_INT){
+      // finding out if we're in the easy case
+      this->x_range_bin = power_of_two(this->x_range);    
+      this->is_fast_int = this->x_range < 100000 || this->x_range <= 2*n;
+      this->NA_value = this->x_range - 1;
+    }
+    
+  } else {
+    // we apply a conversion to a known type
+    // in particular, dates are turned into character which will make it work
+    
+    if(TYPEOF(x) == CHARSXP || TYPEOF(x) == LGLSXP || TYPEOF(x) == INTSXP || 
+      TYPEOF(x) == REALSXP || TYPEOF(x) == CPLXSXP || TYPEOF(x) == STRSXP || TYPEOF(x) == RAWSXP){
+      // we convert to character
+      SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("as.character"), x));
+  
+      int any_error;
+      this->x_conv = R_tryEval(call_as_character, R_GlobalEnv, &any_error);
+
+      if(any_error){
+        Rf_error("In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n");
       }
       
+      UNPROTECT(1);
+      
+      // conversion succeeded
+      this->type = T_STR;
+      this->px_intptr = (intptr_t *) STRING_PTR(this->x_conv);
+      
     } else {
-      // we apply a conversion to a known type
-      // in particular, dates are turned into character which will make it work
-      
-      if(TYPEOF(x) == CHARSXP || TYPEOF(x) == LGLSXP || TYPEOF(x) == INTSXP || 
-        TYPEOF(x) == REALSXP || TYPEOF(x) == CPLXSXP || TYPEOF(x) == STRSXP || TYPEOF(x) == RAWSXP){
-        // we convert to character
-        SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("as.character"), x));
+      Rf_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
+    }    
     
-        int any_error;
-        this->x_conv = R_tryEval(call_as_character, R_GlobalEnv, &any_error);
-
-        if(any_error){
-          Rf_error("In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n");
-        }
-        
-        UNPROTECT(1);
-        
-        // conversion succeeded
-        this->type = T_STR;
-        this->px_intptr = (intptr_t *) STRING_PTR(this->x_conv);
-        
-      } else {
-        Rf_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
-      }    
-      
-    }
   }
-  
-  if(IS_INT){
-    // finding out if we're in the easy case
-    this->x_range_bin = power_of_two(this->x_range);    
-    this->is_fast_int = this->x_range < 100000 || this->x_range <= 2*n;
-    this->NA_value = this->x_range - 1;
-  }  
 }
 
 SEXP std_string_to_r_string(std::vector<std::string> x){
