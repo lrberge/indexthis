@@ -1,3 +1,5 @@
 \.vscode
 _DEV
 _CPP_CACHE
+**.o
+**.dll
