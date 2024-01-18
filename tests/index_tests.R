@@ -163,7 +163,7 @@ for(i_type in int_types){
             format(names(base))[i_type], ", ",
             format(names(base))[j_type], ", ",
             format(names(base))[k_type], ", ",
-            format(names(base))[l_type])
+            format(names(base))[l_type], sep = "")
         zz_raw = base[[l_type]]
         
         for(any_na in c(FALSE, TRUE)){

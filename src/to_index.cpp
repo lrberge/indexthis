@@ -434,6 +434,8 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
       }
     }
     
+    delete[] int_array;
+    
   } else {  
     // we hash the vectors successively to turn them into "sparse" int32
     // we combine values from different vectors with xor
