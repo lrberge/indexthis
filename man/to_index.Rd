@@ -62,6 +62,12 @@ is why collisions are checked systematically, guaranteeing the validity of the r
 
 Note that \code{NA} values are considered as valid and will not be returned as \code{NA} in the index.
 When indexing numeric vectors, there is no distinction between \code{NA} and \code{NaN}.
+
+The algorithm is optimized for input vectors of type: i) numeric or integer (and equivalent
+data structures, like, e.g., dates), ii) logicals,
+iii) factors, and iv) character.
+The algorithm will be slow for types different from the ones previously mentioned,
+since a conversion to character will first be applied before indexing.
 }
 \examples{
 

@@ -46,6 +46,12 @@
 #' Note that `NA` values are considered as valid and will not be returned as `NA` in the index. 
 #' When indexing numeric vectors, there is no distinction between `NA` and `NaN`.
 #' 
+#' The algorithm is optimized for input vectors of type: i) numeric or integer (and equivalent
+#' data structures, like, e.g., dates), ii) logicals, 
+#' iii) factors, and iv) character. 
+#' The algorithm will be slow for types different from the ones previously mentioned, 
+#' since a conversion to character will first be applied before indexing.
+#' 
 #' @author 
 #' Laurent Berge for this original implementation, Morgan Jacob (author of `kit`) and Sebastian 
 #' Krantz (author of `collapse`) for the hashing idea.
