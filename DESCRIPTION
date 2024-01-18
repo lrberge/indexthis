@@ -1,16 +1,18 @@
 Package: indexthis
 Type: Package
 Title: Quick indexation
-Version: 0.11.2
+Version: 0.1.0
 Authors@R:
     c(person(given = "Laurent",
              family = "Berge",
              role = c("aut", "cre"),
-             email = "laurent.berge@u-bordeaux.fr"))
+             email = "laurent.berge@u-bordeaux.fr"),
+      person(given = "Sebastian", family = "Krantz", role = "ctb"),
+      person(given = "Morgan", family = "Jacob", role = "ctb"))
 Imports: Rcpp(>= 1.0.5), dreamerr(>= 1.4.0), stringmagic
 LinkingTo: Rcpp
 Depends: R(>= 3.5.0)
-Description: Quick indexation of any type of vector or of any combination of those. Indexation turns a vector into an integer vector going from 1 to the number of unique elements.
+Description: Quick indexation of any type of vector or of any combination of those. Indexation turns a vector into an integer vector going from 1 to the number of unique elements. Indexes are important building blocks for many algorithms.
 License: GPL-3
 VignetteBuilder: knitr
 LazyData: true

@@ -7,11 +7,11 @@
 
 #' Turns one or multiple vectors into an index (aka group id, aka key)
 #' 
-#' Turns one or multiple vectors of the same length into an index, that is a integer vector 
+#' Turns one or multiple vectors of the same length into an index, that is an integer vector 
 #' of the same length ranging from 1 to the number of unique elements in the vectors. 
 #' This is equivalent to creating a key.
 #' 
-#' @param ... The vectors to be turned into indexes. Only works for atomic vectors. 
+#' @param ... The vectors to be turned into an index. Only works for atomic vectors. 
 #' If multiple vectors are provided, they should all be of the same length. Notes that 
 #' you can alternatively provide a list of vectors with the argument `list`.
 #' @param list An alternative to using `...` to pass the input vectors. If provided, it
@@ -20,10 +20,10 @@
 #' @param sorted Logical, default is `FALSE`. By default the index order is based on 
 #' the order of occurence. Values occurring before have lower index values. Use `sorted=TRUE`
 #' to have the index to be sorted based on the vector values. For example `c(7, 3, 7, -8)` will be 
-#' turned into `c(1, 2, 1, 3)` if sorted=FALSE and into `c(3, 2, 3, 1)` is `sorted=TRUE`.
+#' turned into `c(1, 2, 1, 3)` if `sorted=FALSE` and into `c(3, 2, 3, 1)` is `sorted=TRUE`.
 #' @param items.out Logical, default is `FALSE`. Whether to return the input values the indexes
 #' refer to. If `TRUE`, the attribute `"items"` is created with the vector values. Note that
-#' you can return instead a list insteda of an attribute with `out.list = TRUE`.
+#' you can return a list instead of an attribute with `out.list = TRUE`.
 #' @param out.list Logical, default is `FALSE`. If `TRUE`, the function returns a list 
 #' of two elements: `index` and `items`. The `items` is the unique input elements 
 #' the index refers to.
@@ -34,14 +34,27 @@
 #' character vector represent their combination.
 #' @param internal Logical, default is `FALSE`. If `TRUE`, some checks on the data are ignored.
 #' 
+#' @details 
+#' The algorithm to create the indexes is based on a semi-hashing of the vectors in input. 
+#' The hash table is of size `2 * n`, with `n` the number of observations. Hence 
+#' the hash of all values is partial in order to fit that range. That is to say a
+#' 32 bits hash is turned into a `log2(2 * n)` bits hash simply by shifting the bits.
+#' This in turn will necessarily
+#' lead to multiple collisions (ie different values leading to the same hash). This
+#' is why collisions are checked systematically, guaranteeing the validity of the resulting index.
+#' 
+#' Note that `NA` values are considered as valid and will not be returned as `NA` in the index. 
+#' When indexing numeric vectors, there is no distinction between `NA` and `NaN`.
+#' 
 #' @author 
-#' Laurent Berge
+#' Laurent Berge for this original implementation, Morgan Jacob (author of `kit`) and Sebastian 
+#' Krantz (author of `collapse`) for the hashing idea.
 #' 
 #' 
 #' @examples
 #' 
 #' x = c("u", "a", "a", "s", "u", "u")
-#' y = c(5, 5, 5, 3, 3, 7)
+#' y = c(  5,   5,   5,   3,   3,   7)
 #' 
 #' # By default, the index value is based on order of occurrence
 #' to_index(x)
@@ -67,7 +80,7 @@
 #' to_index(x, y, items.out = TRUE, items.df = TRUE)
 #' to_index(x, y, items.out = TRUE, items.df = TRUE, sorted = TRUE)
 #' 
-#' # NAs considered as valid
+#' # NAs are considered as valid
 #' x_NA = c("u", NA, "a", "a", "s", "u", "u")
 #' to_index(x_NA, items.out = TRUE)
 #' to_index(x_NA, items.out = TRUE, sorted = TRUE)
@@ -81,7 +94,7 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
   
   check_arg(list, "NULL list")
   IS_DOT = TRUE
-  if (!is.null(list)) {
+  if(!is.null(list)){
     dots = list
     IS_DOT = FALSE
   } else {
@@ -120,7 +133,7 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
   # Creating the ID
   #
   
-  info = to_index_internal(dots)
+  info = cpp_to_index(dots)
   index = info$index
   if (sorted || items.out) {
     
@@ -203,19 +216,5 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
 
   res
 }
-
-
-to_index_internal = function(x){
-  # x: a list of vectors
-  # x must be a list
-  
-  if (!is.list(x)) {
-    check_arg(x, "list")
-  }
-  
-  return(cpp_to_index(x))
-}
-
-
 
 

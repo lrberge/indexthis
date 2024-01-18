@@ -16,7 +16,7 @@ to_index(
 )
 }
 \arguments{
-\item{...}{The vectors to be turned into indexes. Only works for atomic vectors.
+\item{...}{The vectors to be turned into an index. Only works for atomic vectors.
 If multiple vectors are provided, they should all be of the same length. Notes that
 you can alternatively provide a list of vectors with the argument \code{list}.}
 
@@ -27,11 +27,11 @@ then \code{...} is ignored.}
 \item{sorted}{Logical, default is \code{FALSE}. By default the index order is based on
 the order of occurence. Values occurring before have lower index values. Use \code{sorted=TRUE}
 to have the index to be sorted based on the vector values. For example \code{c(7, 3, 7, -8)} will be
-turned into \code{c(1, 2, 1, 3)} if sorted=FALSE and into \code{c(3, 2, 3, 1)} is \code{sorted=TRUE}.}
+turned into \code{c(1, 2, 1, 3)} if \code{sorted=FALSE} and into \code{c(3, 2, 3, 1)} is \code{sorted=TRUE}.}
 
 \item{items.out}{Logical, default is \code{FALSE}. Whether to return the input values the indexes
 refer to. If \code{TRUE}, the attribute \code{"items"} is created with the vector values. Note that
-you can return instead a list insteda of an attribute with \code{out.list = TRUE}.}
+you can return a list instead of an attribute with \code{out.list = TRUE}.}
 
 \item{out.list}{Logical, default is \code{FALSE}. If \code{TRUE}, the function returns a list
 of two elements: \code{index} and \code{items}. The \code{items} is the unique input elements
@@ -47,14 +47,26 @@ character vector represent their combination.}
 \item{internal}{Logical, default is \code{FALSE}. If \code{TRUE}, some checks on the data are ignored.}
 }
 \description{
-Turns one or multiple vectors of the same length into an index, that is a integer vector
+Turns one or multiple vectors of the same length into an index, that is an integer vector
 of the same length ranging from 1 to the number of unique elements in the vectors.
 This is equivalent to creating a key.
+}
+\details{
+The algorithm to create the indexes is based on a semi-hashing of the vectors in input.
+The hash table is of size \code{2 * n}, with \code{n} the number of observations. Hence
+the hash of all values is partial in order to fit that range. That is to say a
+32 bits hash is turned into a \code{log2(2 * n)} bits hash simply by shifting the bits.
+This in turn will necessarily
+lead to multiple collisions (ie different values leading to the same hash). This
+is why collisions are checked systematically, guaranteeing the validity of the resulting index.
+
+Note that \code{NA} values are considered as valid and will not be returned as \code{NA} in the index.
+When indexing numeric vectors, there is no distinction between \code{NA} and \code{NaN}.
 }
 \examples{
 
 x = c("u", "a", "a", "s", "u", "u")
-y = c(5, 5, 5, 3, 3, 7)
+y = c(  5,   5,   5,   3,   3,   7)
 
 # By default, the index value is based on order of occurrence
 to_index(x)
@@ -80,7 +92,7 @@ to_index(x, y, items.out = TRUE)
 to_index(x, y, items.out = TRUE, items.df = TRUE)
 to_index(x, y, items.out = TRUE, items.df = TRUE, sorted = TRUE)
 
-# NAs considered as valid
+# NAs are considered as valid
 x_NA = c("u", NA, "a", "a", "s", "u", "u")
 to_index(x_NA, items.out = TRUE)
 to_index(x_NA, items.out = TRUE, sorted = TRUE)
@@ -88,5 +100,6 @@ to_index(x_NA, items.out = TRUE, sorted = TRUE)
 
 }
 \author{
-Laurent Berge
+Laurent Berge for this original implementation, Morgan Jacob (author of \code{kit}) and Sebastian
+Krantz (author of \code{collapse}) for the hashing idea.
 }
