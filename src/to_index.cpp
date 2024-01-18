@@ -35,6 +35,10 @@ inline uint32_t hash_double(uint32_t v1, uint32_t v2, int shifter){
   return (((3141592653U * v1) ^ (3141592653U * v2)) >> (32 - shifter));
 }
 
+inline bool is_equal_dbl(double x, double y){
+  return std::isnan(x) ? std::isnan(y) : x == y;
+}
+
 // Class very useful to pass around the data on R vectors 
 class r_vector {
   r_vector() = delete;
@@ -85,11 +89,11 @@ r_vector::r_vector(SEXP x){
     
     bool is_numeric = Rf_isNumeric(x);
     if(is_numeric){
-      SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("is.numeric"), x));
-      int any_error;
-      SEXP is_num_result = R_tryEval(call_as_character, R_GlobalEnv, &any_error);
-      UNPROTECT(1);
-      is_numeric = LOGICAL(is_num_result)[0];
+      // SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("is.numeric"), x));
+      // int any_error;
+      // SEXP is_num_result = R_tryEval(call_as_character, R_GlobalEnv, &any_error);
+      // UNPROTECT(1);
+      // is_numeric = LOGICAL(is_num_result)[0];
     }
     
     if(is_numeric || Rf_isFactor(x) || TYPEOF(x) == LGLSXP){
@@ -347,7 +351,7 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
       bool does_exist = false;
       while(hashed_obs_vec[id] != 0){
         obs = hashed_obs_vec[id] - 1;
-        if(px_dbl[obs] == px_dbl[i]){
+        if(is_equal_dbl(px_dbl[obs], px_dbl[i])){
           p_index[i] = p_index[obs];
           does_exist = true;
           break;
@@ -540,7 +544,7 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
         bool does_exist = false;
         while(hashed_obs_vec[id] != 0){
           obs = hashed_obs_vec[id] - 1;
-          if(px_dbl[obs] == px_dbl[i] && p_index_in[obs] == p_index_in[i]){
+          if(is_equal_dbl(px_dbl[obs], px_dbl[i]) && p_index_in[obs] == p_index_in[i]){
             p_index_out[i] = p_index_out[obs];
             does_exist = true;
             break;

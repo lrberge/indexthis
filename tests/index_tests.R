@@ -78,7 +78,10 @@ for(i_type in seq_along(base)){
       y = y_raw
       if(any_na){
         x[c(1, 32, 65, 125)] = NA
-        y[c(2, 33, 67, 200)] = NA
+        y[c(1, 32)] = y[1]
+        
+        y[c(2, 33, 65, 200, 225)] = NA
+        x[c(2, 33)] = x[2]
       }
       
       index = to_index(x, y)
