@@ -22,7 +22,7 @@ As you can see, the vector `x` is turned into an integer whose values map the un
 
 The algorithm to create the indexes is based on a partial-hashing of the vectors in input. 
 
-A table of size `2 * n`, with `n` the number of observations, contains the observation of the first value with that hash. Hence each hash value must lie within `[0; 2*n]`, leading to a *de facto* partial hashing.
+A table of size `2 * n + 1`, with `n` the number of observations, contains the index (observation id) of the first value with that hash. Hence each hash value must lie within `[0; 2*n]`, leading to a *de facto* partial hashing.
 
 All the values of the input vector are turned into a 32 bits hash, which is itself turned into a `log2(2 * n)` bits hash simply by shifting the bits. When there are multiple vectors in input their hash values are simply xor'ed to create a single hash.
 
@@ -36,7 +36,11 @@ This algorithm is brilliant and is faster than everything else I've tested. The 
 
 This algorithm departs from `collapse`'s implementation quite heavily. In fact there exists faster algorithms for special cases: when the data looks like integers. In particular, the difference in speed should be seen for multiple vectors. There are tricks to combine input vectors that look like integers (even without being integers) and I tried hard to take advantage of this (that part is original).
 
+## Why this package?
 
+As mentionned in the introduction, indexes are a key input to many algorithms. Creating a 0-dependencies (except Rcpp) package dedicated to this key step makes sense from a programming perspective. Ideally, having such a functionnality in base R would be the best, but this is a second best.
+
+Note that since it is based on a single `cpp` file, if you want to use it in one of your projects, it is easy to just copy the file directly into your project, guaranteeing stability.
 
 
 
