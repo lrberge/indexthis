@@ -1,5 +1,18 @@
-// algorithm turning stuff into ints
-//
+/*********************************************************************************
+* Author: Laurent R. Berge                                                       *
+* Version: 1.0.0                                                                 *
+* Date: 2024-01-23                                                               *
+*                                                                                *
+* Algorithm turning a vector, or a group of vectors of the same length, into     *
+* an integer vector ranging from 1 to the number of unique elements in the       *
+* vector, or group of vectors.                                                   *
+*                                                                                *
+* Credits: I got the idea of the hashing algorihtm from Sebastian Ktrantz's code *
+* who's got it from Morgan Jacob's code.                                         *
+*                                                                                * 
+* Otherwise, 100% original code + a few original ideas.                          * 
+*                                                                                *
+*********************************************************************************/
 
 #include <stdint.h>
 #include <cmath>
@@ -7,14 +20,15 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-using std::vector;
+// Comments:
+// - I don't handle COMPLEX efficiently (easy to fix that). Is it important to handle it?
+// - NAs and NaNs in numeric vectors are not distinguished (I don't think it 
+// should in numerical applications). I don't see when that's important.
+// 
+// - there are many repetitions to handle many different cases. The problem is that
+// the compiler does not optimize the loops if I write more compactly. So be it.
 
-//
-// Very cool hashing algorithm that I found thanks to Sebastian Krantz's `collapse`.
-// The author of the hashing idea is Morgan Jacob methinks.
-//
-// The current implementation is very different from the previous authors
-//
+using std::vector;
 
 enum {T_INT, T_DBL_INT, T_DBL, T_STR};
 
