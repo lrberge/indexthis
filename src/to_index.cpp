@@ -201,7 +201,6 @@ r_vector::r_vector(SEXP x){
     
   } else {
     // we apply a conversion to a known type
-    // in particular, dates are turned into character which will make it work
     
     if(TYPEOF(x) == CHARSXP || TYPEOF(x) == LGLSXP || TYPEOF(x) == INTSXP || 
       TYPEOF(x) == REALSXP || TYPEOF(x) == CPLXSXP || TYPEOF(x) == STRSXP || TYPEOF(x) == RAWSXP){
