@@ -813,8 +813,13 @@ SEXP cpp_to_index(SEXP x){
     for(int k=0; k<K; ++k){
       r_vector rvec(VECTOR_ELT(x, k));
       all_vecs.push_back(rvec);
+      if(k == 0){
+        n = Rf_length(VECTOR_ELT(x, 0));
+      } else if(Rf_length(VECTOR_ELT(x, k)) != n){
+        Rf_error("All the vectors to turn into an index must be of the same length. This is currently not the case.");
+      }
     }
-    n = Rf_length(VECTOR_ELT(x, 0));
+    
   } else {
     K = 1;
     n = Rf_length(x);

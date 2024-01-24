@@ -102,9 +102,12 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
   
   check_character(items.join, scalar = TRUE)
   
-  check_arg(list, "NULL list")
   IS_DOT = TRUE
-  if(!is.null(list)){
+  if(!missing(list) && !is.null(list)){
+    if(!is.list(list)){
+      stop("The argument `list` must be a list of vectors of the same length.",
+           "\nPROBLEM: currently it is not a list.")
+    }
     dots = list
     IS_DOT = FALSE
   } else {
