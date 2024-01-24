@@ -49,7 +49,7 @@
 #' The algorithm will be slow for types different from the ones previously mentioned, 
 #' since a conversion to character will first be applied before indexing.
 #' 
-#' @value
+#' @return
 #' By default, an integer vector is returned, of the same length as the inputs.
 #' 
 #' If you are interested in the values the indexes (i.e. the integer values) refer to, you can 

@@ -8,10 +8,8 @@ to_index(
   ...,
   list = NULL,
   sorted = FALSE,
-  items.out = FALSE,
-  out.list = FALSE,
-  items.df = FALSE,
-  items.join = "_",
+  items = FALSE,
+  items.simplify = TRUE,
   internal = FALSE
 )
 }
@@ -29,22 +27,28 @@ the order of occurence. Values occurring before have lower index values. Use \co
 to have the index to be sorted based on the vector values. For example \code{c(7, 3, 7, -8)} will be
 turned into \code{c(1, 2, 1, 3)} if \code{sorted=FALSE} and into \code{c(3, 2, 3, 1)} is \code{sorted=TRUE}.}
 
-\item{items.out}{Logical, default is \code{FALSE}. Whether to return the input values the indexes
-refer to. If \code{TRUE}, the attribute \code{"items"} is created with the vector values. Note that
-you can return a list instead of an attribute with \code{out.list = TRUE}.}
+\item{items}{Logical, default is \code{FALSE}. Whether to return the input values the indexes
+refer to. If \code{TRUE}, a list of two elements, named \code{index} and \code{items}, is returned.
+The \code{items} object is a data.frame containing the values of the input vectors corresponding
+to the index. Note that if there is only one input vector and \code{items.simplify=TRUE} (default),
+then \code{items} is a vector instead of a data.frame.}
 
-\item{out.list}{Logical, default is \code{FALSE}. If \code{TRUE}, the function returns a list
-of two elements: \code{index} and \code{items}. The \code{items} is the unique input elements
-the index refers to.}
-
-\item{items.df}{Logical, default is \code{FALSE}. Whether to return the input elements (to which the index refer) in the form of a data.frame.}
-
-\item{items.join}{Character scalar, default is \code{"_"}. Only used if the items are returned and
-there were multiple vectors as input and if \code{items.df=FALSE}. If there are multiple
-vectors in input, their unique elements are joined with \code{items.join}, so that a single
-character vector represent their combination.}
+\item{items.simplify}{Logical scalar, default is \code{TRUE}. Only used if the values
+from the input vectors are returned with \code{items=TRUE}. If there is only one input vector,
+the \code{items} is a vector if \code{items.simplify=TRUE}, and a data.frame otherwise.}
 
 \item{internal}{Logical, default is \code{FALSE}. If \code{TRUE}, some checks on the data are ignored.}
+}
+\value{
+By default, an integer vector is returned, of the same length as the inputs.
+
+If you are interested in the values the indexes (i.e. the integer values) refer to, you can
+use the argument \code{items = TRUE}. In that case, a list of two elements, named \code{index}
+and \code{items}, is returned. The \code{index} is the integer vector representing the index, and
+the \code{items} is a data.frame containing the input values the index refers to.
+
+Note that if \code{items = TRUE} and \code{items.simplify = TRUE} and there is only one vector
+in input, the \code{items} slot of the returned object will be equal to a vector.
 }
 \description{
 Turns one or multiple vectors of the same length into an index, that is an integer vector
@@ -84,24 +88,20 @@ to_index(x, sorted = TRUE)
 to_index(y, sorted = TRUE)
 to_index(x, y, sorted = TRUE)
 
-# To get the values to which the index refer, use items.out
-to_index(x, items.out = TRUE)
+# To get the values to which the index refer, use items=TRUE
+to_index(x, items = TRUE)
 
 # play around with the format of the output
-to_index(x, items.out = TRUE, out.list = TRUE)
-to_index(x, items.out = TRUE, out.list = TRUE, items.df = TRUE)
+to_index(x, items = TRUE, items.simplify = TRUE)   # => default
+to_index(x, items = TRUE, items.simplify = FALSE)
 
-# multiple items are by default coerced into a single character string ...
-to_index(x, y, items.out = TRUE)
-
-# ... to avoid this, use items.df = TRUE
-to_index(x, y, items.out = TRUE, items.df = TRUE)
-to_index(x, y, items.out = TRUE, items.df = TRUE, sorted = TRUE)
+# multiple items are always in a data.frame
+to_index(x, y, items = TRUE)
 
 # NAs are considered as valid
 x_NA = c("u", NA, "a", "a", "s", "u", "u")
-to_index(x_NA, items.out = TRUE)
-to_index(x_NA, items.out = TRUE, sorted = TRUE)
+to_index(x_NA, items = TRUE)
+to_index(x_NA, items = TRUE, sorted = TRUE)
 
 
 }
