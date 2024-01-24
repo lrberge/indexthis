@@ -34,7 +34,7 @@ This algorithm is brilliant and is faster than everything else I've tested. The 
 
 ## Difference with existing algorithms
 
-This algorithm departs from `collapse`'s implementation quite heavily. In fact there exists faster algorithms for special cases: when the data looks like integers. In particular, the difference in speed should be seen for multiple vectors. There are tricks to combine input vectors that look like integers (even without being integers) and I tried hard to take advantage of this (that part is original).
+This algorithm departs from `collapse`'s implementation quite heavily. In fact there exists faster algorithms for special cases: when the data looks like integers (and `collapse` uses this for a few cases). In particular, the difference in speed should be seen for multiple vectors. There are tricks to combine input vectors that look like integers (even without being integers) and I tried hard to take advantage of this (that part is original).
 
 ## Why this package?
 
