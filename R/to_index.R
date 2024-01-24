@@ -209,7 +209,7 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
     } else {
       # we "paste" them if Q > 1
       if(Q == 1){
-        items = items_unik
+        items = items_unik[[1]]
       } else {
         arg_list = items_unik
         arg_list$sep = items.join
