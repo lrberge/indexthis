@@ -5,8 +5,8 @@
 #------------------------------------------------------------------------------#
 
 
-library(to_index)
-test = to_index::test
+library(indexthis)
+test = indexthis:::test
 
 # In these tests, we check the consistency of the results, quite extensively
 # we cover all the branches in the cpp code
