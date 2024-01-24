@@ -107,7 +107,11 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
     if(!is.list(list)){
       stop("The argument `list` must be a list of vectors of the same length.",
            "\nPROBLEM: currently it is not a list.")
+    } else if(length(list) == 0){
+      stop("The argument `list` must be a list of vectors of the same length.",
+           "\nPROBLEM: currently this list is empty.")
     }
+    
     dots = list
     IS_DOT = FALSE
   } else {
