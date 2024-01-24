@@ -497,6 +497,34 @@ enum = function(x){
   }
 }
 
+check_set_options = function(x, options, op = NULL, free = FALSE, case = FALSE){
+  # x: always a character vector
+  # options: the options to match
+  if(length(x) == 0) return(x)
+
+  n = length(x)
+  res = x
+  for(i in 1:n){
+    v = x[i]
+
+    pm = pmatch(v, options)
+    if(is.na(pm) && !case){
+      pm = pmatch(tolower(v), tolower(options))
+    }
+    
+    if(is.na(pm) && !free){
+      # absence of a match
+      stop_hook("The option `", v, "` is not valid for the current operation.\n",
+                "FYI the option available are ", enum(options), ".")
+    }
+
+    if(!is.na(pm)){
+      res[i] = options[pm]
+    }
+  }
+
+  res
+}
 
 ####
 #### dreamerr's copies ####
