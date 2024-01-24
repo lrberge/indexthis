@@ -428,6 +428,7 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
 #### utilities ####
 ####
 
+
 deparse_long = function(x){
   x_dp = deparse(x, width.cutoff = 500L)
   if(length(x_dp) > 1){
@@ -514,8 +515,8 @@ check_set_options = function(x, options, op = NULL, free = FALSE, case = FALSE){
     
     if(is.na(pm) && !free){
       # absence of a match
-      stop_hook("The option `", v, "` is not valid for the current operation.\n",
-                "FYI the option available are ", enum(options), ".")
+      stop_up("The option `", v, "` is not valid for the current operation.\n",
+              "FYI the option available are ", enum(options), ".")
     }
 
     if(!is.na(pm)){
@@ -524,6 +525,10 @@ check_set_options = function(x, options, op = NULL, free = FALSE, case = FALSE){
   }
 
   res
+}
+
+string_fill = function(x, width){
+  sprintf("%-*s", width, x)
 }
 
 ####

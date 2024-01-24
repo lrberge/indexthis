@@ -224,12 +224,12 @@ chunk = function(x) cat(toupper(x), "\n\n")
 
 test_contains = function(x, pattern){
   if(length(x) > 1){
-    stop("Internal error: test_contains only works with vectors of length 1.")
+    stop("Internal error: `test_contains` only works with vectors of length 1.")
   }
   
-  if(!string_is(x, pattern)){
-    stopi("The pattern {bq?pattern} was not found in the following string:", 
-            "\n\n{x}")
+  if(!grepl(pattern, x)){
+    stop("The pattern `", pattern, "` was not found in the following string:", 
+         "\n\n", x)
   }
   
 }
@@ -238,13 +238,13 @@ test_err_contains = function(x, pattern){
   err = try(x, silent = TRUE)
   if(!inherits(err, "try-error")){
     x_dp = deparse(substitute(x))[1]
-    stopi("The expression should lead to an error.", 
-            "\nPROBLEM: {bq?x_dp} is not an error.")
+    stop("The expression should lead to an error.", 
+            "\nPROBLEM: `", x_dp, "` is not an error.")
   }
   
-  if(!string_is(err, pattern)){
-    stopi("The pattern {bq?pattern} was not found in the following error message:", 
-            "\n\n{err}")
+  if(!grepl(pattern, err)){
+    stop("The pattern `", pattern, "` was not found in the following error message:", 
+         "\n\n", err)
   }
   
 }
@@ -445,7 +445,7 @@ run_tests = function(chunk, from = 1, source = FALSE){
       index = which(line_fail >= line_start & line_fail <= line_end)
       my_file_full = file_names[index]
       my_file_short = gsub(".+/", "", my_file_full)
-      file_info = string_magic("In file {Q?my_file_short}\n==> ")
+      file_info = paste0("In file \"", my_file_short, "\"\n==> ")
       
       line_in_file = line_fail - line_start[index]
       
@@ -469,7 +469,7 @@ run_tests = function(chunk, from = 1, source = FALSE){
           assign(var, get(var, env), parent.frame())
       }
       
-      command = string_magic("rstudioapi::navigateToFile({Q?my_file_full}, {line_in_file})")
+      command = paste0("rstudioapi::navigateToFile(\"", my_file_full, "\", ", line_in_file, ")")
       command = str2lang(command)
       
       eval(command)

@@ -4,11 +4,12 @@
 # ~: Main tests
 #------------------------------------------------------------------------------#
 
-# R -d "valgrind --leak-check=full"
 
-# Rcpp::sourceCpp("src/to_index.cpp")
-# source("R/to_index.R") ; source("R/test_funs.R")
-# library(dreamerr)
+library(to_index)
+test = to_index::test
+
+# In these tests, we check the consistency of the results, quite extensively
+# we cover all the branches in the cpp code
 
 n = 500
 
@@ -123,8 +124,12 @@ for(i_type in seq_along(base)){
         
         if(any_na){
           x[c(1, 32, 65, 125)] = NA
-          y[c(2, 33, 67, 200)] = NA
-          z[c(8, 33, 50, 200)] = NA
+          y[c(1, 32)] = y[1]
+          
+          y[c(2, 33, 65, 200, 225)] = NA
+          x[c(2, 33)] = x[2]
+          
+          z[c(8, 33, 50, 125)] = NA
         }
         
         index = to_index(x, y, z)
@@ -176,8 +181,13 @@ for(i_type in int_types){
           
           if(any_na){
             x[c(1, 32, 65, 125)] = NA
-            y[c(2, 33, 67, 200)] = NA
+            y[c(1, 32)] = y[1]
+            
+            y[c(2, 33, 65, 200, 225)] = NA
+            x[c(2, 33)] = x[2]
+          
             z[c(8, 33, 50, 200)] = NA
+            
             zz[c(8, 33, 50, 200)] = NA
           }
           
