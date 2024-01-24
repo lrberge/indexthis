@@ -429,6 +429,20 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
 ####
 
 
+is_num_complex = function(x){
+  is.numeric(x) || is.complex(x)
+}
+
+
+deparse_short = function(x){
+  x_dp = deparse(x)
+  if(length(x_dp) > 1){
+    x_dp = paste0(x_dp, "...")
+  }
+
+  x_dp
+}
+
 deparse_long = function(x){
   x_dp = deparse(x, width.cutoff = 500L)
   if(length(x_dp) > 1){
@@ -535,6 +549,15 @@ string_fill = function(x, width){
 #### dreamerr's copies ####
 ####
 
+set_up = function(.up = 1){
+  if(length(.up) == 1 && is.numeric(.up) && !is.na(.up) && .up == floor(.up) && .up >= 0){
+    assign("indexthis_UP", .up, parent.frame())
+  } else {
+    stop("Argument '.up' must be an integer scalar greater or equal to 1. ",
+         "This is currently not the case.")
+  }
+}
+
 
 # in this version of stop_up, there is no interpolation because
 # we don't want the stringmagic dependency
@@ -545,6 +568,10 @@ stop_up = function(..., up = 1, msg = NULL, envir = parent.frame()){
 
   # up with set_up
   mc = match.call()
+  if(!"up" %in% names(mc)){
+    up_value = mget("indexthis_UP", parent.frame(), ifnotfound = 1)
+    up = up_value[[1]]
+  }
   
   up = up + 1
 
@@ -577,6 +604,10 @@ warn_up = function (..., up = 1, immediate. = FALSE, envir = parent.frame()){
   message = paste0(...)
   
   mc = match.call()
+  if (!"up" %in% names(mc)) {
+    up_value = mget("indexthis_UP", parent.frame(), ifnotfound = 1)
+    up = up_value[[1]]
+  }
   
   up = up + 1
   
@@ -592,6 +623,22 @@ warn_up = function (..., up = 1, immediate. = FALSE, envir = parent.frame()){
           call. = FALSE, immediate. = immediate.)
 }
 
+
+check_set_width = function(width_expr){
+  sw = getOption("width") 
+  data = list(.sw = sw)
+  width = eval(width_expr, data, parent.frame(2))
+  
+  if(isFALSE(width)){
+    width = Inf
+  }
+  
+  if(is.null(width)){
+    width = min(120, 0.9 * sw)
+  }
+  
+  width
+}
 
 fit_screen = function(msg, width = NULL, leading_ws = TRUE, leader = ""){
   # makes a message fit the current screen, by cutting the text at the appropriate location

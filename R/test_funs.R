@@ -504,7 +504,7 @@ non_ascii = function(folder = "R"){
             cat("-> line ", string_fill(line, max(nchar(all_lines))), ":\n===|", text[line], "\n")
             cat("===|", gsub("[^ -~\t]", "__HERE__", text[line]), "\n")
 
-            if(line != tail(all_lines, 1)) cat("\n")
+            if(line != all_lines[length(all_lines)]) cat("\n")
         }
 
         if(id < n) cat("\n ---------- \n\n")
