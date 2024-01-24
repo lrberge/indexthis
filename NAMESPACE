@@ -10,9 +10,5 @@ export(to_index)
 # IMPORT
 #
 
-import(dreamerr)
-
 importFrom(Rcpp, evalCpp)
-
-importFrom(stringmagic, string_is, string_magic, string_fill)
 

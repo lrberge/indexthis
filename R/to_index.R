@@ -95,8 +95,12 @@
 to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.list = FALSE,
                     items.df = FALSE, items.join = "_", internal = FALSE){
 
-  check_arg(sorted, items.out, out.list, items.df, "logical scalar")
-  check_arg(items.join, "character scalar")
+  check_logical(sorted, scalar = TRUE)
+  check_logical(items.out, scalar = TRUE)
+  check_logical(out.list, scalar = TRUE)
+  check_logical(items.df, scalar = TRUE)
+  
+  check_character(items.join, scalar = TRUE)
   
   check_arg(list, "NULL list")
   IS_DOT = TRUE
@@ -105,9 +109,10 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
     IS_DOT = FALSE
   } else {
     if(!internal){
-      check_arg(..., "vector mbt")
+      dots = check_set_dots(..., mbt = TRUE)
+    } else {
+      dots = list(...)
     }
-    dots = list(...)
   }  
 
   Q = length(dots)
@@ -115,7 +120,8 @@ to_index = function(..., list = NULL, sorted = FALSE, items.out = FALSE, out.lis
   n = n_all[1]
 
   if(length(unique(n_all)) != 1){
-    stopi("All elements in `...` should be of the same length (current lenghts are {enum?n_all}).")
+    stop("All elements in `...` should be of the same length (current lenghts are ", 
+         enum(n_all), ").")
   }
   
   if(n == 0){
