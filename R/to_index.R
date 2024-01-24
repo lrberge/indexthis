@@ -52,6 +52,13 @@
 #' The algorithm will be slow for types different from the ones previously mentioned, 
 #' since a conversion to character will first be applied before indexing.
 #' 
+#' @value
+#' By default, an integer vector is returned, of the same length as the inputs.
+#' 
+#' If you are interested in the values the indexes (i.e. the integer values) refer to, you can 
+#' use the argument `items.out = TRUE`. In that case, the values of the vector in input 
+#' are returned in the attribute
+#' 
 #' @author 
 #' Laurent Berge for this original implementation, Morgan Jacob (author of `kit`) and Sebastian 
 #' Krantz (author of `collapse`) for the hashing idea.

@@ -220,7 +220,7 @@ test = function(x, y, type = "=", tol = 1e-6){
 }
 
 
-chunk = function(x) cat(toupper(x), "\n\n")
+chunk = function(x) message(toupper(x), "\n")
 
 test_contains = function(x, pattern){
   if(length(x) > 1){
@@ -476,7 +476,7 @@ run_tests = function(chunk, from = 1, source = FALSE){
 
   } else {
     n_tests = sum(grepl("^test\\(", test_code))
-    print(paste0("tests performed successfully (", n_tests, ")"))
+    message("tests performed successfully (", n_tests, ")")
   }
 }
 
@@ -492,22 +492,22 @@ non_ascii = function(folder = "R"){
 
     if(n == 0) return("No non-ASCII character found.")
 
-    cat("Tip: Type, e.g., 1750G to go to the line in VIM\n\n")
+    message("Tip: Type, e.g., 1750G to go to the line in VIM\n\n")
 
     for(id in seq(n)){
         i = i_non_ascii[id]
-        cat("File: ", gsub("R/", "", all_files[i]), "\n")
+        message("File: ", gsub("R/", "", all_files[i]))
 
         text = all_R_text[[i]]
         all_lines = which(grepl("[^ -~\t]", text))
         for(line in all_lines){
-            cat("-> line ", string_fill(line, max(nchar(all_lines))), ":\n===|", text[line], "\n")
-            cat("===|", gsub("[^ -~\t]", "__HERE__", text[line]), "\n")
+            message("-> line ", string_fill(line, max(nchar(all_lines))), ":\n===|", text[line])
+            message("===|", gsub("[^ -~\t]", "__HERE__", text[line]))
 
-            if(line != all_lines[length(all_lines)]) cat("\n")
+            if(line != all_lines[length(all_lines)]) message("")
         }
 
-        if(id < n) cat("\n ---------- \n\n")
+        if(id < n) message("\n ---------- \n")
     }
 }
 
