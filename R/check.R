@@ -6,6 +6,7 @@
 
 # 0 dependencies checking script for basic types
 # this is a bit like dreamerr's
+# I added the it_ prefix (IndexThis) to avoid conflicts with dreamerr if copy pasted in the same project
 
 ####
 #### checking ####
@@ -13,12 +14,12 @@
 
 
 check_logical = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FALSE, mbt = FALSE, up = 0){
-  set_up(up + 1)
+  it_set_up(up + 1)
 
   if(missing(x)){
     if(mbt){
       x_dp = deparse_short(substitute(x))
-      stop_up("The argument `", x_dp, "` must be provided. PROBLEM: it is missing.")
+      it_stop_up("The argument `", x_dp, "` must be provided. PROBLEM: it is missing.")
     }
 
     return()
@@ -32,7 +33,7 @@ check_logical = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
     x_dp = deparse_short(substitute(x))
     nullable = if(null) "(nullable) " else ""
     type = if(scalar) "scalar" else "vector"
-    stop_up("The ", nullable, "argument `", x_dp, "` must be a logical ", type, ".",
+    it_stop_up("The ", nullable, "argument `", x_dp, "` must be a logical ", type, ".",
             " PROBLEM: it is not logical, it is of class ", enum(class(x)), ".")
   }
 
@@ -45,7 +46,7 @@ check_logical = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
     if(len_x != 1){
       x_dp = deparse_short(substitute(x))
       nullable = if(null) "(nullable) " else ""
-      stop_up("The ", nullable, "argument `", x_dp, "` must be a logical scalar.",
+      it_stop_up("The ", nullable, "argument `", x_dp, "` must be a logical scalar.",
               " PROBLEM: it is not of length 1, it is of length ", length(x), ".")
     }
   }
@@ -55,7 +56,7 @@ check_logical = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
     nullable = if(null) "(nullable) " else ""
     type = if(scalar) "scalar" else "vector without NA"
     problem = if(scalar) "it is equal to NA" else "it contains NA values"
-    stop_up("The ", nullable, "argument `", x_dp, "` must be a logical ", type, ". ",
+    it_stop_up("The ", nullable, "argument `", x_dp, "` must be a logical ", type, ". ",
             "PROBLEM: ", problem, ".")
   }
 
@@ -63,12 +64,12 @@ check_logical = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
 
 check_numeric = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FALSE, 
                          mbt = FALSE, integer = FALSE, complex = FALSE, up = 0){
-  set_up(up + 1)
+  it_set_up(up + 1)
   
   if(missing(x)){
     if(mbt){
       x_dp = deparse_short(substitute(x))
-      stop_up("The argument `", x_dp, "` must be provided. PROBLEM: it is missing.")
+      it_stop_up("The argument `", x_dp, "` must be provided. PROBLEM: it is missing.")
     }
 
     return()
@@ -85,7 +86,7 @@ check_numeric = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
     type = if(integer) "an integer" else "a numeric"
     if(complex) paste0(type, ", or complex,")
     
-    stop_up("The ", nullable, "argument `", x_dp, "` must be ", type, " ", vector_type, ".",
+    it_stop_up("The ", nullable, "argument `", x_dp, "` must be ", type, " ", vector_type, ".",
             " PROBLEM: it is not ", type, ", it is of class ", enum(class(x)), ".")
   }
 
@@ -100,7 +101,7 @@ check_numeric = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
       nullable = if(null) "(nullable) " else ""
       type = if(integer) "an integer" else "a numeric"
       
-      stop_up("The ", nullable, "argument `", x_dp, "` must be ", type, " scalar.",
+      it_stop_up("The ", nullable, "argument `", x_dp, "` must be ", type, " scalar.",
               " PROBLEM: it is not of length 1, it is of length ", length(x), ".")
     }
   }
@@ -112,7 +113,7 @@ check_numeric = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
     type = if(integer) "an integer" else "a numeric"
     problem = if(scalar) "it is equal to NA" else "it contains NA values"
     
-    stop_up("The ", nullable, "argument `", x_dp, "` must be ", type, " ", vector_type, ". ",
+    it_stop_up("The ", nullable, "argument `", x_dp, "` must be ", type, " ", vector_type, ". ",
             "PROBLEM: ", problem, ".")
   }
   
@@ -129,7 +130,7 @@ check_numeric = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
           } else {
             msg = paste0("has ", c(" a real", "an imaginary")[i], " part equal to ", z)
           }
-          stop_up("The argument `", x_dp, "` must be an integer ", 
+          it_stop_up("The argument `", x_dp, "` must be an integer ", 
                   ifelse(scalar, "scalar", "vector"), ".",
                   "\nPROBLEM: the ", n_th(i), " value ", msg, ", not an integer.")
         }
@@ -138,7 +139,7 @@ check_numeric = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FA
       if(any(x != round(x))){
         x_dp = deparse_short(substitute(x))
         i = which(x != round(x))[1]
-        stop_up("The argument `", x_dp, "` must be an integer ",
+        it_stop_up("The argument `", x_dp, "` must be an integer ",
                 ifelse(scalar, "scalar", "vector"), ".",
                 "\nPROBLEM: the ", n_th(i), " value ",
                 "is equal to ", x[i], ", not an integer.")
@@ -157,7 +158,7 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
   if(n == 0){
 
     if(mbt){
-      stop_up("At least one element in `...` must be provided. PROBLEM: `...` is empty.")
+      it_stop_up("At least one element in `...` must be provided. PROBLEM: `...` is empty.")
     } else {
       return(list())
     }
@@ -193,10 +194,10 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
           elem = gsub("^[^:]+:", "", elem)
         }
 
-        stop_up("In the argument `...`, the ", n_th(i), " element", nm,
+        it_stop_up("In the argument `...`, the ", n_th(i), " element", nm,
                 " raises an error:\n", elem)
       } else {
-        stop_up("In the argument `...`, the elements must not be functions.",
+        it_stop_up("In the argument `...`, the elements must not be functions.",
                 "\nPROBLEM: the ", n_th(i), " element", nm, " is a function.")
       }
     }
@@ -228,7 +229,7 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
       mc_dots = mc[["..."]]
       value_all = sapply(i_pblm, function(i) deparse_short(mc_dots[[i]]))
 
-      stop_up("In the argument `...`, all elements must be scalars (i.e. of length 1).",
+      it_stop_up("In the argument `...`, all elements must be scalars (i.e. of length 1).",
               "\nPROBLEM: The ", n_th(i_pblm), " element(s) are not of length 1.")
     }
   }
@@ -252,7 +253,7 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
       mc_dots = mc[["..."]]
       value_all = sapply(i_pblm, function(i) deparse_short(mc_dots[[i]]))
 
-      stop_up("In the argument `...`, all elements must be atomic (i.e. convertible to a character string).",
+      it_stop_up("In the argument `...`, all elements must be atomic (i.e. convertible to a character string).",
               "\nPROBLEM: The ", n_th(i_pblm), " element(s) cannot be converted.")
     }
 
@@ -281,7 +282,7 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
       mc_dots = mc[["..."]]
       value_all = sapply(i_pblm, function(i) deparse_short(mc_dots[[i]]))
 
-      stop_up("In the argument `...`, all elements must be without NA.\nPROBLEM: ",
+      it_stop_up("In the argument `...`, all elements must be without NA.\nPROBLEM: ",
               "The ", enum(n_th(i_pblm)), " element(s) contain(s) NA values.")
     }
   }
@@ -295,25 +296,18 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
 #### utilities ####
 ####
 
+isError = function(x){
+  inherits(x, "try-error")
+}
 
 is_num_complex = function(x){
   is.numeric(x) || is.complex(x)
 }
 
-
 deparse_short = function(x){
   x_dp = deparse(x)
   if(length(x_dp) > 1){
     x_dp = paste0(x_dp, "...")
-  }
-
-  x_dp
-}
-
-deparse_long = function(x){
-  x_dp = deparse(x, width.cutoff = 500L)
-  if(length(x_dp) > 1){
-    x_dp = paste0(x_dp, collapse = "\n")
   }
 
   x_dp
@@ -396,7 +390,7 @@ check_set_options = function(x, options, op = NULL, free = FALSE, case = FALSE){
     
     if(is.na(pm) && !free){
       # absence of a match
-      stop_up("The option `", v, "` is not valid for the current operation.\n",
+      it_stop_up("The option `", v, "` is not valid for the current operation.\n",
               "FYI the option available are ", enum(options), ".")
     }
 
@@ -415,8 +409,9 @@ string_fill = function(x, width){
 ####
 #### dreamerr's copies ####
 ####
+# it prefix: specific to this package
 
-set_up = function(.up = 1){
+it_set_up = function(.up = 1){
   if(length(.up) == 1 && is.numeric(.up) && !is.na(.up) && .up == floor(.up) && .up >= 0){
     assign("indexthis_UP", .up, parent.frame())
   } else {
@@ -426,14 +421,14 @@ set_up = function(.up = 1){
 }
 
 
-# in this version of stop_up, there is no interpolation because
+# in this version of it_stop_up, there is no interpolation because
 # we don't want the stringmagic dependency
 # 
-stop_up = function(..., up = 1, msg = NULL, envir = parent.frame()){
+it_stop_up = function(..., up = 1, msg = NULL, envir = parent.frame()){
 
   main_msg = paste0(...)
 
-  # up with set_up
+  # up with it_set_up
   mc = match.call()
   if(!"up" %in% names(mc)){
     up_value = mget("indexthis_UP", parent.frame(), ifnotfound = 1)
@@ -452,13 +447,13 @@ stop_up = function(..., up = 1, msg = NULL, envir = parent.frame()){
 
   intro = paste0("in ", my_call)
 
-  main_msg = fit_screen(main_msg)
+  main_msg = it_fit_screen(main_msg)
 
   if(!is.null(msg)){
     if(length(msg) > 1){
       msg = paste(msg, collapse = "")
     }
-    msg = fit_screen(msg)
+    msg = it_fit_screen(msg)
     on.exit(message(msg))
   }
 
@@ -466,32 +461,7 @@ stop_up = function(..., up = 1, msg = NULL, envir = parent.frame()){
 
 }
 
-warn_up = function (..., up = 1, immediate. = FALSE, envir = parent.frame()){
-
-  message = paste0(...)
-  
-  mc = match.call()
-  if (!"up" %in% names(mc)) {
-    up_value = mget("indexthis_UP", parent.frame(), ifnotfound = 1)
-    up = up_value[[1]]
-  }
-  
-  up = up + 1
-  
-  my_call = sys.call(sys.parent(up))
-  my_call = deparse(my_call)[1]
-  
-  nmax = 50
-  if (nchar(my_call) > nmax){
-    my_call = paste0(substr(my_call, 1, nmax - 1), "...")
-  }
-      
-  warning("In ", my_call, ":\n ", fit_screen(message),
-          call. = FALSE, immediate. = immediate.)
-}
-
-
-check_set_width = function(width_expr){
+it_check_set_width = function(width_expr){
   sw = getOption("width") 
   data = list(.sw = sw)
   width = eval(width_expr, data, parent.frame(2))
@@ -507,7 +477,7 @@ check_set_width = function(width_expr){
   width
 }
 
-fit_screen = function(msg, width = NULL, leading_ws = TRUE, leader = ""){
+it_fit_screen = function(msg, width = NULL, leading_ws = TRUE, leader = ""){
   # makes a message fit the current screen, by cutting the text at the appropriate location
   # msg must be a character string of length 1
   
@@ -516,7 +486,7 @@ fit_screen = function(msg, width = NULL, leading_ws = TRUE, leader = ""){
   # Note that \t are NOT handled
   
   # eval
-  width = check_set_width(substitute(width))
+  width = it_check_set_width(substitute(width))
 
   N_LEAD = nchar(leader)
 
@@ -577,9 +547,7 @@ fit_screen = function(msg, width = NULL, leading_ws = TRUE, leader = ""){
   paste(res, collapse = "\n")
 }
 
-isError = function(x){
-  inherits(x, "try-error")
-}
+
 
 
 
