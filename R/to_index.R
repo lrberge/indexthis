@@ -139,14 +139,11 @@ to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,
     res = integer(0)
     if(return_items){
       items = integer(0)
-      if(items.df){
+      if(items.simplify){
         items = data.frame()
       }
-      if(out.list){
-        res = list(index = res, items = items)
-      } else {
-        attr(res, "items") = items
-      }
+      
+      res = list(index = res, items = items)
     }
     
     return(res)
