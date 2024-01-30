@@ -1,7 +1,7 @@
 Package: indexthis
 Type: Package
 Title: Quick Indexation
-Version: 1.0.0
+Version: 1.0.1
 Authors@R:
     c(person(given = "Laurent",
              family = "Berge",
@@ -11,6 +11,7 @@ Authors@R:
       person(given = "Morgan", family = "Jacob", role = "ctb"))
 Imports: Rcpp(>= 1.0.5)
 LinkingTo: Rcpp
+URL: https://github.com/lrberge/indexthis
 Depends: R(>= 3.5.0)
 Description: Quick indexation of any type of vector or of any combination of those. Indexation turns a vector into an integer vector going from 1 to the number of unique elements. Indexes are important building blocks for many algorithms. The method is described at <https://github.com/lrberge/indexthis/>.
 License: GPL-3

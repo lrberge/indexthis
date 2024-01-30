@@ -336,10 +336,20 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
     // NOTA: the compiler will take the if() out of the loop
     // not possible if we also have an if() inside the while() loop
     // => explains why I needed to repeat all the for loops
+    const bool any_na = x->any_na;
+    const int NA_value = x->NA_value;
     for(size_t i=0 ; i<n ; ++i){
       
       if(x_type == T_DBL_INT){
-        id = hash_single((int) px_dbl[i], shifter);
+        if(any_na){
+          if(std::isnan(px_dbl[i])){
+            id = hash_single(NA_value, shifter);
+          } else {
+            id = hash_single((int) px_dbl[i], shifter);
+          }
+        } else {
+          id = hash_single((int) px_dbl[i], shifter);
+        }
       } else {
         u_d2int.dbl = px_dbl[i];
         id = hash_single(u_d2int.uint[0] + u_d2int.uint[1], shifter);
@@ -531,10 +541,20 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
       // NOTA: the compiler will take the if() out of the loop
       // not possible if we also have an if() inside the while() loop
       // => explains why I needed to repeat all the for loops
+      const bool any_na = x->any_na;
+      const int NA_value = x->NA_value;
       for(size_t i=0 ; i<n ; ++i){
         
         if(x_type == T_DBL_INT){
-          id = hash_double((int) px_dbl[i], p_index_in[i], shifter);
+          if(any_na){
+            if(std::isnan(px_dbl[i])){
+              id = hash_double(NA_value, p_index_in[i], shifter);
+            } else {
+              id = hash_double((int) px_dbl[i], p_index_in[i], shifter);
+            }
+          } else {
+            id = hash_double((int) px_dbl[i], p_index_in[i], shifter);
+          }
         } else {
           u_d2int.dbl = px_dbl[i];
           id = hash_double(u_d2int.uint[0] + u_d2int.uint[1], p_index_in[i], shifter);
