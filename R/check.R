@@ -13,6 +13,11 @@
 ####
 
 
+is_old_r = function(){
+  R.version$major < "4" || R.version$minor <= "1"
+}
+
+
 check_logical = function(x, null = FALSE, scalar = FALSE, l0 = FALSE, no_na = FALSE, mbt = FALSE, up = 0){
   it_set_up(up + 1)
 
@@ -172,7 +177,7 @@ check_set_dots = function(..., mc = NULL, mbt = FALSE, character = FALSE,
   }
 
   dots = vector("list", n)
-  dots_nm = ...names()
+  dots_nm = names(substitute(list(...)))[-1]
 
   # We first catch evaluation problems
   for(i in 1:n){
