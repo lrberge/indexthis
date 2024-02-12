@@ -3,7 +3,7 @@
 
 The only purpose of this package is to create indexes (aka group IDs, aka keys) as fast as possible. Indexing turns a vector, or group of vectors of the same length, to a single *integer* vector ranging from 1 to the number of unique values in the vector, or group of vectors.
 
-Indexes are important inputs to many algorithms (usually low level). Whiile working on the original vectors can be slow, working with a simple integer vector with nice properties (unitary increments) is fast. And you can always retrieve the original vectors from the index.
+Indexes are important inputs to many algorithms (usually low level). While working on the original vectors can be slow, working with a simple integer vector with nice properties (unitary increments) is fast. And you can always retrieve the original vectors from the index (see the Appendix for an example).
 
 But enough talk, here's a simple example:
 ```R
@@ -15,34 +15,6 @@ to_index(x)
 y = c(  5,   5,   5,   3,   3,   5)
 to_index(x, y)
 #> [1] 1 2 2 3 4 1
-
-#
-# Getting the data back
-#
-
-# you need to request the items
-# => you get a list of two elements: 
-# $index: as above
-# $items: a data.frame containing the unique elements
-(info = to_index(x, y, items = TRUE))
-#> $index
-#> [1] 1 2 2 3 4 1
-#> 
-#> $items
-#>   x y
-#> 1 u 5
-#> 2 a 5
-#> 3 s 3
-#> 4 u 3
-
-cbind(info$items[info$index, ], info$index)
-#>     x y info$index
-#> 1   u 5          1
-#> 2   a 5          2
-#> 2.1 a 5          2
-#> 3   s 3          3
-#> 4   u 3          4
-#> 1.1 u 5          1
 
 ```
 
@@ -72,5 +44,37 @@ As mentionned in the introduction, indexes are a key input to many algorithms. C
 
 Note that since it is based on a single `cpp` file, if you want to use it in one of your projects, it is easy to just copy the file directly into your project, guaranteeing stability.
 
+-----
 
+#### Appendix: Illustration of how to get the data back
+
+```R
+# using the same data as in the first example
+x = c("u", "a", "a", "s", "u", "u")
+y = c(  5,   5,   5,   3,   3,   5)
+
+# you need to use the argument `items`
+# => you get a list of two elements: 
+# $index: the index, as in the original illustration
+# $items: a data.frame containing the unique elements
+(info = to_index(x, y, items = TRUE))
+#> $index
+#> [1] 1 2 2 3 4 1
+#> 
+#> $items
+#>   x y
+#> 1 u 5
+#> 2 a 5
+#> 3 s 3
+#> 4 u 3
+
+cbind(info$items[info$index, ], info$index)
+#>     x y info$index
+#> 1   u 5          1
+#> 2   a 5          2
+#> 2.1 a 5          2
+#> 3   s 3          3
+#> 4   u 3          4
+#> 1.1 u 5          1
+```
 
