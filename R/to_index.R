@@ -67,7 +67,7 @@
 #' @examples
 #' 
 #' x = c("u", "a", "a", "s", "u", "u")
-#' y = c(  5,   5,   5,   3,   3,   7)
+#' y = c(  5,   5,   5,   3,   3,   5)
 #' 
 #' # By default, the index value is based on order of occurrence
 #' to_index(x)
@@ -93,6 +93,15 @@
 #' x_NA = c("u", NA, "a", "a", "s", "u", "u")
 #' to_index(x_NA, items = TRUE)
 #' to_index(x_NA, items = TRUE, sorted = TRUE)
+#' 
+#' 
+#' #
+#' # Getting the data back from the index
+#' #
+#' 
+#' info = to_index(x, y, items = TRUE)
+#' info$items[info$index, ]
+#' 
 #' 
 #' 
 to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,

@@ -7,13 +7,43 @@ Indexes are important inputs to many algorithms (usually low level). Whiile work
 
 But enough talk, here's a simple example:
 ```R
+library(indexthis)
 x = c("u", "a", "a", "s", "u", "u")
 to_index(x)
 # [1] 1 2 2 3 1 1
 
-y = c(  5,   5,   5,   3,   3,   7)
+y = c(  5,   5,   5,   3,   3,   5)
 to_index(x, y)
-#> [1] 1 2 2 3 4 5
+#> [1] 1 2 2 3 4 1
+
+#
+# Getting the data back
+#
+
+# you need to request the items
+# => you get a list of two elements: 
+# $index: as above
+# $items: a data.frame containing the unique elements
+(info = to_index(x, y, items = TRUE))
+#> $index
+#> [1] 1 2 2 3 4 1
+#> 
+#> $items
+#>   x y
+#> 1 u 5
+#> 2 a 5
+#> 3 s 3
+#> 4 u 3
+
+cbind(info$items[info$index, ], info$index)
+#>     x y info$index
+#> 1   u 5          1
+#> 2   a 5          2
+#> 2.1 a 5          2
+#> 3   s 3          3
+#> 4   u 3          4
+#> 1.1 u 5          1
+
 ```
 
 As you can see, the vector `x` is turned into an integer whose values map the unique values of `x`. The second example is the same for the combination of `x` and `y`. This function is equivalent to, and is inspired from, [collapse::GRPid](https://sebkrantz.github.io/collapse/reference/GRP.html).
