@@ -22,7 +22,9 @@ local({
   }
   
   # add packages to load here: eg load_pkg(fixest, stringmagic)
-  assign("mb", microbenchmark::microbenchmark, .GlobalEnv)
+  if(requireNamespace("microbenchmark", quietly = TRUE)){
+    assign("mb", microbenchmark::microbenchmark, .GlobalEnv)
+  }
   
   # Replacing View with datadive
   if(requireNamespace("datadive", quietly = TRUE)){
