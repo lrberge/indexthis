@@ -31,30 +31,38 @@ indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cp
     stop("Don't run this function in the indexthis package you fool!")
   }
   
-  path_r = system.file("inst/to_index.R", package = "indexthis")
+  dest_path_r = path_r
+  path_r = system.file("vendor/to_index.R", package = "indexthis")
   if(identical(path_r, "")){
     stop("Unexpected bug. The package code could not be located.")
   }
-  dest_path_r = file.path(path, path_r)
+  
   if(file.exists(dest_path_r)){
+    current_r_code = readLines(path_r)
     old_r_code = clean_to_index_r_code(dest_r_path)
     if(!is_same_code(current_r_code, old_r_code)){
       message("Updating the file '", path_r, "'")
-      writeLines(current_r_code, path_r)
+      file.copy(path_r, dest_path_r, recursive = TRUE, overwrite = TRUE)
     }
+  } else {
+    file.copy(path_r, dest_path_r, recursive = TRUE, overwrite = TRUE)
   }
   
-  path_cpp = system.file("inst/to_index.cpp", package = "indexthis")
+  dest_path_cpp = path_cpp
+  path_cpp = system.file("vendor/to_index.cpp", package = "indexthis")
   if(identical(path_cpp, "")){
     stop("Unexpected bug. The package code could not be located.")
   }
-  dest_path_cpp = file.path(path, path_cpp)
+  
   if(file.exists(dest_path_cpp)){
+    current_cpp_code = readLines(path_cpp)
     old_cpp_code = clean_to_index_cpp_code(dest_cpp_path)
     if(!is_same_code(current_cpp_code, old_cpp_code)){
       message("Updating the file '", path_cpp, "'")
-      writeLines(current_cpp_code, path_cpp)
+      file.copy(path_cpp, dest_path_cpp, recursive = TRUE, overwrite = TRUE)
     }
+  } else {
+    file.copy(path_cpp, dest_path_cpp, recursive = TRUE, overwrite = TRUE)
   }
 }
 
@@ -141,25 +149,25 @@ gen_vendor_code = function(){
   
   current_r_code = clean_to_index_r_code()
   
-  path_r = "inst/to_index.R"
+  path_r = "inst/vendor/to_index.R"
   if(!file.exists(path_r)){
     writeLines(current_r_code, path_r)
   } else {
     old_r_code = readLines(path_r)
     if(!is_same_code(current_r_code, old_r_code)){
-      message("Updating the R code in inst/")
+      message("Updating the R code in inst/R")
       writeLines(current_r_code, path_r)
     }
   }
   
   current_cpp_code = clean_to_index_cpp_code()
-  path_cpp = "inst/to_index.cpp"
+  path_cpp = "inst/vendor/to_index.cpp"
   if(!file.exists(path_cpp)){
     writeLines(current_cpp_code, path_cpp)
   } else {
     old_cpp_code = readLines(path_cpp)
     if(!is_same_code(current_cpp_code, old_cpp_code)){
-      message("Updating the cpp code in inst/")
+      message("Updating the cpp code in inst/cpp")
       writeLines(current_cpp_code, path_cpp)
     }
   }
