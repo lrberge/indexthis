@@ -1,4 +1,8 @@
 
+# indexthis 1.0.2
+
+- remove checking functions to facilitate vendoring
+
 # indexthis 1.0.1
 
 - fix bug when a numeric vector considered as int contained NA values in a specific branch of the algorithm

@@ -29,7 +29,6 @@
 #' @param items.simplify Logical scalar, default is `TRUE`. Only used if the values
 #' from the input vectors are returned with `items=TRUE`. If there is only one input vector,
 #' the `items` is a vector if `items.simplify=TRUE`, and a data.frame otherwise.
-#' @param internal Logical, default is `FALSE`. If `TRUE`, some checks on the data are ignored.
 #' 
 #' @details 
 #' The algorithm to create the indexes is based on a semi-hashing of the vectors in input. 
@@ -105,13 +104,7 @@
 #' 
 #' 
 to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,
-                    items.simplify = TRUE, internal = FALSE){
-
-  if(!internal){
-    check_logical(sorted, scalar = TRUE)
-    check_logical(items, scalar = TRUE)
-    check_logical(items.simplify, scalar = TRUE)
-  }  
+                    items.simplify = TRUE){
   
   return_items = items
   
@@ -128,11 +121,7 @@ to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,
     dots = list
     IS_DOT = FALSE
   } else {
-    if(!internal){
-      dots = check_set_dots(..., mbt = TRUE)
-    } else {
-      dots = list(...)
-    }
+    dots = list(...)
   }  
 
   Q = length(dots)
