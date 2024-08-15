@@ -16,6 +16,17 @@
 #' @details 
 #' This is a utility to populate a package with the necessary code to run the `to_index` function. This avoids to create a dependency with the `indexthis` package.
 #' 
+#' The underlying code of `to_index` is in C++. Hence if the routines are to be included in a package, it needs to be registered appropriately. There are four cases: three are automatic, one requires a bit of copy pasting from the user. Let's review them.
+#' 
+#' It the target package already has C++ code and uses `Rcpp` or `cpp11` to make the linking, the function `indexthis_vendor` registers the main function as a `Rcpp` or `cpp11` routine, and all should be well.
+#' 
+#' If the target package has no C/C++ code at all, `indexthis_vendor` updates the NAMESPACE and registers the routine, and all should be well.
+#' 
+#' If the target package already has C/C++ code, this is more coplicated because there should be only one `R_init_pkgname` symbol and it should be existing already (see Writing R extensions, section "dyn.load and dyn.unload").
+#' In that case, in the file `to_index.cpp` the necessary code to register the routine will be at the end of the file, within comments.
+#' The (knowledgeable) user has to copy paste in the appropriate location, where she registers the existing routines.
+#' 
+#' 
 #' @return 
 #' This function does not return anything. Instead it writes two files: one in R (by default in the folder `./R`) and one in cpp (by default in the folder `src/`). Those files contain the necessary source code to run the function [`to_index`].
 #' 
@@ -73,6 +84,7 @@ indexthis_vendor = function(pkg = "."){
     }
   } else {
     message("Creating the file '", dest_path_r, "'")
+    create_dir(dest_path_r)
     writeLines(current_r_code, dest_path_r)
   }
   
@@ -102,6 +114,7 @@ indexthis_vendor = function(pkg = "."){
     }
   } else {
     message("Creating the file '", dest_path_cpp, "'")
+    create_dir(dest_path_cpp)
     writeLines(current_cpp_code, dest_path_cpp)
   }
   
@@ -133,6 +146,13 @@ indexthis_vendor = function(pkg = "."){
 ####
 #### internal ####
 ####
+
+create_dir = function(path){
+  dir = dirname(normalizePath(path))
+  if(!dir.exists(dir)){
+    dir.create(dir, recursive = TRUE)
+  }
+}
 
 renvir_get = function(key){
   # Get the values of envir variables
