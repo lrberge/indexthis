@@ -612,7 +612,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
   n_groups = g;
   delete[] int_array;
 }
-SEXP cpp_to_index(SEXP &x){
+SEXP cpp_to_index_main(SEXP &x){
   size_t n = 0;
   int K = 0;
   std::vector<r_vector> all_vecs;
@@ -709,7 +709,7 @@ SEXP cpp_to_index(SEXP &x){
 }
 }
 extern "C" SEXP _indexthis_cpp_to_index(SEXP x){
-  return indexthis::cpp_to_index(x);
+  return indexthis::cpp_to_index_main(x);
 }
 static const R_CallMethodDef CallEntries[] = {
     {"_indexthis_cpp_to_index", (DL_FUNC) &_indexthis_cpp_to_index, 1},

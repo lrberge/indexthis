@@ -37,6 +37,9 @@ indexthis_vendor = function(pkg = "."){
   desc = readLines(desc_path)
   pkg_name = trimws(gsub("^Package:", "", desc[1]))
   
+  is_rcpp = any(grepl("^LinkingTo:.+Rcpp\\b", desc))
+  message("Rcpp = ", is_rcpp)
+  
   dest_path_r = normalizePath(file.path(pkg, "R", "to_index.R"))
   dest_path_cpp = normalizePath(file.path(pkg, "src", "to_index.cpp"))
   
@@ -57,6 +60,9 @@ indexthis_vendor = function(pkg = "."){
   
   current_r_code = readLines(path_r)
   current_r_code = gsub("_indexthis", pkg_name_, current_r_code)
+  if(is_rcpp){
+    current_r_code = gsub("\\.Call.+, ?", "cpp_to_index(", current_r_code)
+  }
   
   if(file.exists(dest_path_r)){
     old_r_code = readLines(dest_path_r)
@@ -82,6 +88,10 @@ indexthis_vendor = function(pkg = "."){
   
   current_cpp_code = readLines(path_cpp)
   current_cpp_code = gsub("_indexthis", pkg_name_, current_cpp_code)
+  if(is_rcpp){
+    i = which(grepl("^extern ", current_cpp_code))[1]
+    current_cpp_code = c(current_cpp_code[1:(i - 1)], RCPP_EXPORT, "")
+  }
   
   if(file.exists(dest_path_cpp)){
     old_cpp_code = readLines(dest_path_cpp)
@@ -226,6 +236,11 @@ gen_vendor_code = function(){
   
   
 }
+
+RCPP_EXPORT = c("// [[Rcpp::export(rng = false)]]",
+                "SEXP cpp_to_index(SEXP x){",
+                "  return indexthis::cpp_to_index_main(x);",
+                "}")
 
 
 

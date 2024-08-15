@@ -824,7 +824,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
 }
 
 
-SEXP cpp_to_index(SEXP &x){
+SEXP cpp_to_index_main(SEXP &x){
   // x: vector or list of vectors of the same length (n)
   // returns:
   // - index: vector of length n, from 1 to the numberof unique values of x (g)
@@ -980,7 +980,7 @@ SEXP cpp_to_index(SEXP &x){
 // export to R
 
 extern "C" SEXP _indexthis_cpp_to_index(SEXP x){
-  return indexthis::cpp_to_index(x);
+  return indexthis::cpp_to_index_main(x);
 }
 
 static const R_CallMethodDef CallEntries[] = {
