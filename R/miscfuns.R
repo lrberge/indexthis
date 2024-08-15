@@ -39,13 +39,15 @@ indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cp
   
   if(file.exists(dest_path_r)){
     current_r_code = readLines(path_r)
-    old_r_code = clean_to_index_r_code(dest_r_path)
+    old_r_code = clean_to_index_r_code(dest_path_r)
     if(!is_same_code(current_r_code, old_r_code)){
-      message("Updating the file '", path_r, "'")
-      file.copy(path_r, dest_path_r, recursive = TRUE, overwrite = TRUE)
+      message("Updating the file '", dest_path_r, "'")
+      file.copy(path_r, dest_path_r, recursive = dir.exists(dest_path_r), 
+                overwrite = TRUE)
     }
   } else {
-    file.copy(path_r, dest_path_r, recursive = TRUE, overwrite = TRUE)
+    file.copy(path_r, dest_path_r, recursive = dir.exists(dest_path_r), 
+              overwrite = TRUE)
   }
   
   dest_path_cpp = path_cpp
@@ -56,13 +58,15 @@ indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cp
   
   if(file.exists(dest_path_cpp)){
     current_cpp_code = readLines(path_cpp)
-    old_cpp_code = clean_to_index_cpp_code(dest_cpp_path)
+    old_cpp_code = clean_to_index_cpp_code(dest_path_cpp)
     if(!is_same_code(current_cpp_code, old_cpp_code)){
-      message("Updating the file '", path_cpp, "'")
-      file.copy(path_cpp, dest_path_cpp, recursive = TRUE, overwrite = TRUE)
+      message("Updating the file '", dest_path_cpp, "'")
+      file.copy(path_cpp, dest_path_cpp, recursive = dir.exists(dest_path_cpp), 
+                overwrite = TRUE)
     }
   } else {
-    file.copy(path_cpp, dest_path_cpp, recursive = TRUE, overwrite = TRUE)
+    file.copy(path_cpp, dest_path_cpp, recursive = dir.exists(dest_path_cpp), 
+              overwrite = TRUE)
   }
 }
 
