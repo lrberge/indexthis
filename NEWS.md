@@ -1,5 +1,11 @@
 
-# indexthis 1.0.2
+# indexthis 1.1.0
+
+## New features
+
+- new function `indexthis_vendor` to automatically populate a package directory with the `to_index` function
+
+## Other
 
 - remove checking functions to facilitate vendoring
 

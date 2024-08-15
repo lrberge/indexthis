@@ -5,6 +5,7 @@ useDynLib(indexthis, .registration = TRUE)
 #
 
 export(to_index)
+export(indexthis_vendor)
 
 #
 # IMPORT

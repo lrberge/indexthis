@@ -5,7 +5,32 @@
 #### user-level ####
 ####
 
-indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "R/to_index.cpp"){
+
+
+#' Vendor the `to_index` function
+#' 
+#' Utility to integrate the `to_index` function within a package without a dependency.
+#' 
+#' @param path_r Character scalar, default is `"R/to_index.R"`. Where to place the R-side of the `to_index` function. 
+#' @param path_cpp Character scalar, default is `"src/to_index.cpp"`. Where to place the cpp-side of the `to_index` function. 
+#' 
+#' @details 
+#' This is a utility to populate a package with the necessary code to run the `to_index` function. This avoids to create a dependency with the `indexthis` package.
+#' 
+#' @return 
+#' This function does not return anything. Instead it writes two files: one in R (by default in the folder `./R`) and one in cpp (by default in the folder `src/`). Those files contain the necessary source code to run the function [`to_index`].
+#' 
+#' @examples 
+#' 
+#' ## DO NOT RUN: otherwise it will write in your workspace
+#' # indexthis_vendor()
+#' 
+indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cpp"){
+  
+  if(is_indexthis_root()){
+    stop("Don't run this function in the indexthis package you fool!")
+  }
+  
   path_r = system.file("inst/to_index.R", package = "indexthis")
   if(identical(path_r, "")){
     stop("Unexpected bug. The package code could not be located.")
@@ -105,7 +130,6 @@ clean_to_index_cpp_code = function(path = "./src/to_index.cpp"){
   
   x = x[!grepl("^\\s*//", x)]
   x = x[grepl("\\S", x)]
-  x = gsub("^(\\S)", "\n\\1", x)
   
   c(first_lines, x, "")
 }

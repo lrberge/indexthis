@@ -1,6 +1,6 @@
 # 
 # Generated automatically with indexthis::indexthis_vendor
-# this is indexthis version 1.0.2
+# this is indexthis version 1.1.0
 # 
 
 

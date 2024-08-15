@@ -1,54 +1,35 @@
 // 
 // Generated automatically with indexthis::indexthis_vendor
-// this is indexthis version 1.0.2
+// this is indexthis version 1.1.0
 // 
 
 
-
 #include <stdint.h>
-
 #include <cmath>
-
 #include <vector>
-
 #include <Rcpp.h>
-
 using namespace Rcpp;
-
 using std::vector;
-
 enum {T_INT, T_DBL_INT, T_DBL, T_STR};
-
 union double2int {
   double dbl;
   uint32_t uint[2];
-
 };
-
 inline int power_of_two(double x){
   return std::ceil(std::log2(x + 1));
-
 }
-
 inline uint32_t hash_single(uint32_t value, int shifter){
   return (3141592653U * value >> (32 - shifter));
-
 }
-
 inline uint32_t hash_double(uint32_t v1, uint32_t v2, int shifter){
   return (((3141592653U * v1) ^ (3141592653U * v2)) >> (32 - shifter));
-
 }
-
 inline bool is_equal_dbl(double x, double y){
   return std::isnan(x) ? std::isnan(y) : x == y;
-
 }
-
 class r_vector {
   r_vector() = delete;
   SEXP x_conv;
-
 public:
   r_vector(SEXP);
   int n;
@@ -63,9 +44,7 @@ public:
   int *px_int = (int *) nullptr;
   double *px_dbl = (double *) nullptr;
   intptr_t *px_intptr = (intptr_t *) nullptr;
-
 };
-
 r_vector::r_vector(SEXP x){
   int n = Rf_length(x);
   this->n = n;
@@ -166,9 +145,7 @@ r_vector::r_vector(SEXP x){
       Rf_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
     }    
   }
-
 }
-
 SEXP std_string_to_r_string(std::vector<std::string> x){
   int n = x.size();
   SEXP res = PROTECT(Rf_allocVector(STRSXP, n));
@@ -177,9 +154,7 @@ SEXP std_string_to_r_string(std::vector<std::string> x){
   }
   UNPROTECT(1);
   return res;
-
 }
-
 void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_groups,
                                   vector<int> &vec_first_obs, bool is_final){
   const size_t n = x->n;
@@ -289,9 +264,7 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
   }
   n_groups = g;
   delete[] hashed_obs_vec;
-
 }
-
 void general_type_to_index_double(r_vector *x, int *__restrict p_index_in, 
                                   int *__restrict p_index_out, int &n_groups,
                                   vector<int> &vec_first_obs, bool is_final){
@@ -454,9 +427,7 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
     delete[] hashed_obs_vec;
   }
   n_groups = g;
-
 }
-
 inline void update_index_intarray_g_obs(int id, size_t i, int &g, int * &int_array, 
                                         int *__restrict &p_index, bool &is_final, vector<int> &vec_first_obs){
   if(int_array[id] == 0){
@@ -469,9 +440,7 @@ inline void update_index_intarray_g_obs(int id, size_t i, int &g, int * &int_arr
   } else {
     p_index[i] = int_array[id];
   }  
-
 }
-
 void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k, 
                             int *__restrict p_index, int &n_groups,
                             vector<int> &vec_first_obs, bool is_final){
@@ -639,9 +608,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
   }
   n_groups = g;
   delete[] int_array;
-
 }
-
 SEXP cpp_to_index(SEXP x){
   size_t n = 0;
   int K = 0;
@@ -736,6 +703,5 @@ SEXP cpp_to_index(SEXP x){
     }
   }
   return res;  
-
 }
 

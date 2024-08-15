@@ -9,8 +9,7 @@ to_index(
   list = NULL,
   sorted = FALSE,
   items = FALSE,
-  items.simplify = TRUE,
-  internal = FALSE
+  items.simplify = TRUE
 )
 }
 \arguments{
@@ -36,8 +35,6 @@ then \code{items} is a vector instead of a data.frame.}
 \item{items.simplify}{Logical scalar, default is \code{TRUE}. Only used if the values
 from the input vectors are returned with \code{items=TRUE}. If there is only one input vector,
 the \code{items} is a vector if \code{items.simplify=TRUE}, and a data.frame otherwise.}
-
-\item{internal}{Logical, default is \code{FALSE}. If \code{TRUE}, some checks on the data are ignored.}
 }
 \value{
 By default, an integer vector is returned, of the same length as the inputs.
@@ -76,7 +73,7 @@ since a conversion to character will first be applied before indexing.
 \examples{
 
 x = c("u", "a", "a", "s", "u", "u")
-y = c(  5,   5,   5,   3,   3,   7)
+y = c(  5,   5,   5,   3,   3,   5)
 
 # By default, the index value is based on order of occurrence
 to_index(x)
@@ -102,6 +99,15 @@ to_index(x, y, items = TRUE)
 x_NA = c("u", NA, "a", "a", "s", "u", "u")
 to_index(x_NA, items = TRUE)
 to_index(x_NA, items = TRUE, sorted = TRUE)
+
+
+#
+# Getting the data back from the index
+#
+
+info = to_index(x, y, items = TRUE)
+info$items[info$index, ]
+
 
 
 }

@@ -1,7 +1,7 @@
 Package: indexthis
 Type: Package
 Title: Quick Indexation
-Version: 1.0.2
+Version: 1.1.0
 Authors@R:
     c(person(given = "Laurent",
              family = "Berge",
@@ -16,6 +16,6 @@ Depends: R(>= 3.5.0)
 Description: Quick indexation of any type of vector or of any combination of those. Indexation turns a vector into an integer vector going from 1 to the number of unique elements. Indexes are important building blocks for many algorithms. The method is described at <https://github.com/lrberge/indexthis/>.
 License: GPL-3
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
