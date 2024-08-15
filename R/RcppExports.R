@@ -5,7 +5,3 @@ cpp_to_index <- function(x) {
     .Call(`_indexthis_cpp_to_index`, x)
 }
 
-cpp_double_factor_to_index <- function(x1, x2) {
-    .Call(`_indexthis_cpp_double_factor_to_index`, x1, x2)
-}
-

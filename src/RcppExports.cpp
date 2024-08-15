@@ -21,22 +21,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_double_factor_to_index
-SEXP cpp_double_factor_to_index(SEXP x1, SEXP x2);
-RcppExport SEXP _indexthis_cpp_double_factor_to_index(SEXP x1SEXP, SEXP x2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x1(x1SEXP);
-    Rcpp::traits::input_parameter< SEXP >::type x2(x2SEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_double_factor_to_index(x1, x2));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_indexthis_cpp_to_index", (DL_FUNC) &_indexthis_cpp_to_index, 1},
-    {"_indexthis_cpp_double_factor_to_index", (DL_FUNC) &_indexthis_cpp_double_factor_to_index, 2},
     {NULL, NULL, 0}
 };
 
