@@ -4,18 +4,10 @@
 \alias{indexthis_vendor}
 \title{Vendor the \code{to_index} function}
 \usage{
-indexthis_vendor(
-  path_r = "R/to_index.R",
-  path_cpp = "src/to_index.cpp",
-  pkg = "."
-)
+indexthis_vendor(pkg = ".")
 }
 \arguments{
-\item{path_r}{Character scalar, default is \code{"R/to_index.R"}. Where to place the R-side of the \code{to_index} function.}
-
-\item{path_cpp}{Character scalar, default is \code{"src/to_index.cpp"}. Where to place the cpp-side of the \code{to_index} function.}
-
-\item{pkg}{Character scalar, default is \code{"."}. Location of the directory where the files will be created.}
+\item{pkg}{Character scalar, default is \code{"."}. Location of the package directory where the files will be created.}
 }
 \value{
 This function does not return anything. Instead it writes two files: one in R (by default in the folder \code{./R}) and one in cpp (by default in the folder \verb{src/}). Those files contain the necessary source code to run the function \code{\link{to_index}}.
@@ -28,7 +20,7 @@ This is a utility to populate a package with the necessary code to run the \code
 }
 \examples{
 
-## DO NOT RUN: otherwise it will write in your workspace
+## DO NOT RUN: otherwise it will write in your packge workspace
 # indexthis_vendor()
 
 }
