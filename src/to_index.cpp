@@ -26,9 +26,14 @@
 #include <stdint.h>
 #include <cmath>
 #include <vector>
-#include <Rcpp.h>
-using namespace Rcpp;
+#include <string>
+#include <algorithm>
+#include <R.h>
+#include <Rinternals.h>
+
 using std::vector;
+
+namespace indexthis {
 
 enum {T_INT, T_DBL_INT, T_DBL, T_STR};
 
@@ -818,8 +823,8 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
   delete[] int_array;
 }
 
-// [[Rcpp::export]]
-SEXP cpp_to_index(SEXP x){
+
+SEXP cpp_to_index(SEXP &x){
   // x: vector or list of vectors of the same length (n)
   // returns:
   // - index: vector of length n, from 1 to the numberof unique values of x (g)
@@ -970,6 +975,21 @@ SEXP cpp_to_index(SEXP x){
   return res;  
 }
 
+}
 
+// export to R
 
+extern "C" SEXP _indexthis_cpp_to_index(SEXP x){
+  return indexthis::cpp_to_index(x);
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_indexthis_cpp_to_index", (DL_FUNC) &_indexthis_cpp_to_index, 1},
+    {NULL, NULL, 0}
+};
+
+extern "C" void R_init_indexthis(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
 

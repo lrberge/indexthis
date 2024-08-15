@@ -39,7 +39,7 @@ to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,
     }
     return(res)
   }
-  info = cpp_to_index(dots)
+  info = .Call(`_indexthis_cpp_to_index`, dots)
   index = info$index
   if(sorted || return_items){
     items_unik = vector("list", Q)

@@ -13,7 +13,7 @@
 #' 
 #' @param path_r Character scalar, default is `"R/to_index.R"`. Where to place the R-side of the `to_index` function. 
 #' @param path_cpp Character scalar, default is `"src/to_index.cpp"`. Where to place the cpp-side of the `to_index` function. 
-#' @param pkg Character scalar, default is `"."`. Location of the directory where the files will be created. 
+#' @param pkg Character scalar, default is `"."`. Location of the package directory where the files will be created. 
 #' 
 #' @details 
 #' This is a utility to populate a package with the necessary code to run the `to_index` function. This avoids to create a dependency with the `indexthis` package.
