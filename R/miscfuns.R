@@ -13,6 +13,7 @@
 #' 
 #' @param path_r Character scalar, default is `"R/to_index.R"`. Where to place the R-side of the `to_index` function. 
 #' @param path_cpp Character scalar, default is `"src/to_index.cpp"`. Where to place the cpp-side of the `to_index` function. 
+#' @param pkg Character scalar, default is `"."`. Location of the directory where the files will be created. 
 #' 
 #' @details 
 #' This is a utility to populate a package with the necessary code to run the `to_index` function. This avoids to create a dependency with the `indexthis` package.
@@ -25,13 +26,19 @@
 #' ## DO NOT RUN: otherwise it will write in your workspace
 #' # indexthis_vendor()
 #' 
-indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cpp"){
+indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cpp", pkg = "."){
   
-  if(is_indexthis_root()){
+  dest_path_r = normalizePath(file.path(pkg, path_r))
+  dest_path_cpp = normalizePath(file.path(pkg, path_cpp))
+  
+  if(grepl("indexthis", normalizePath(pkg))){
     stop("Don't run this function in the indexthis package you fool!")
   }
   
-  dest_path_r = path_r
+  #
+  # R
+  #
+  
   path_r = system.file("vendor/to_index.R", package = "indexthis")
   if(identical(path_r, "")){
     stop("Unexpected bug. The package code could not be located.")
@@ -40,6 +47,7 @@ indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cp
   if(file.exists(dest_path_r)){
     current_r_code = readLines(path_r)
     old_r_code = clean_to_index_r_code(dest_path_r)
+    
     if(!is_same_code(current_r_code, old_r_code)){
       message("Updating the file '", dest_path_r, "'")
       file.copy(path_r, dest_path_r, recursive = dir.exists(dest_path_r), 
@@ -50,7 +58,11 @@ indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cp
               overwrite = TRUE)
   }
   
-  dest_path_cpp = path_cpp
+  #
+  # cpp
+  #
+  
+  
   path_cpp = system.file("vendor/to_index.cpp", package = "indexthis")
   if(identical(path_cpp, "")){
     stop("Unexpected bug. The package code could not be located.")
@@ -59,6 +71,7 @@ indexthis_vendor = function(path_r = "R/to_index.R", path_cpp = "src/to_index.cp
   if(file.exists(dest_path_cpp)){
     current_cpp_code = readLines(path_cpp)
     old_cpp_code = clean_to_index_cpp_code(dest_path_cpp)
+    
     if(!is_same_code(current_cpp_code, old_cpp_code)){
       message("Updating the file '", dest_path_cpp, "'")
       file.copy(path_cpp, dest_path_cpp, recursive = dir.exists(dest_path_cpp), 
