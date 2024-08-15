@@ -1,15 +1,15 @@
 
-# indexthis 1.1.0
+# indexthis 2.0.0
 
 ## New features
 
-- new function `indexthis_vendor` to automatically populate a package directory with the `to_index` function
+- new function `indexthis_vendor` to automatically populate a package directory with the `to_index` function. Requires no user intervention (except in one case).
 
 ## Other
 
-- remove checking functions to facilitate vendoring
+- remove `Rcpp` dependency
 
-- cleanup cpp code
+- remove checking functions to facilitate vendoring
 
 # indexthis 1.0.1
 

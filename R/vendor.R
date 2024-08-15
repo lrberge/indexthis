@@ -48,14 +48,49 @@ indexthis_vendor = function(pkg = "."){
   desc = readLines(desc_path)
   pkg_name = trimws(gsub("^Package:", "", desc[1]))
   
-  is_rcpp = any(grepl("^LinkingTo:.+Rcpp\\b", desc))
-  message("Rcpp = ", is_rcpp)
+  # we find out in which case we are:
+  # 1) Rcpp
+  # 2) cpp11
+  # 3) no src at all
+  # 4) existing c/cpp code
+  # 
   
-  dest_path_r = normalizePath(file.path(pkg, "R", "to_index.R"))
-  dest_path_cpp = normalizePath(file.path(pkg, "src", "to_index.cpp"))
+  linking_to = grep("LinkingTo", desc, value = TRUE)
+  is_rcpp_cpp11 = FALSE
+  type = "no-src-code"
+  if(length(linking_to) == 1){
+    if(grepl("cpp11", linking_to)){
+      is_rcpp_cpp11 = TRUE
+      type = "cpp11"
+    } else if(grepl("Rcpp", linking_to)){
+      is_rcpp_cpp11 = TRUE
+      type = "Rcpp"
+    }
+  }
   
-  if(grepl("indexthis", normalizePath(pkg))){
-    stop("Don't run this function in the indexthis package you fool!")
+  if(!is_rcpp_cpp11){
+    src_path = file.path(pkg, "src")
+    if(file.exists(src_path)){
+      c_cpp_files = list.files(src_path, pattern = "(c|C|cpp|CPP)$")
+      c_cpp_files = c_cpp_files[!grepl("to_index.cpp", c_cpp_files)]
+      if(length(c_cpp_files) > 0){
+        type = "existing-code"
+      }
+    }
+  }
+  
+  intro = switch(type,
+                 Rcpp = "Package using Rcpp\n",
+                 cpp11 = "Package using cpp11\n",
+                 "no-src-code" = "Package without C/CPP code.\n",
+                 "existing-code" = "Package with existing C/CPP code.       \nDon't forget to register the routine manually, see the end of the file `src/to_index.cpp`.\n")
+  intro = paste0("Type: ", intro)
+  
+  dest_path_r = normalizePath(file.path(pkg, "R", "to_index.R"), mustWork = FALSE)
+  dest_path_cpp = normalizePath(file.path(pkg, "src", "to_index.cpp"), mustWork = FALSE)
+  
+  if(grepl("indexthis$", normalizePath(pkg))){
+    stop("Don't run this function in the `indexthis` package!!!")
   }
   
   pkg_name_ = paste0("_", pkg_name)
@@ -71,7 +106,7 @@ indexthis_vendor = function(pkg = "."){
   
   current_r_code = readLines(path_r)
   current_r_code = gsub("_indexthis", pkg_name_, current_r_code)
-  if(is_rcpp){
+  if(is_rcpp_cpp11){
     current_r_code = gsub("\\.Call.+, ?", "cpp_to_index(", current_r_code)
   }
   
@@ -79,11 +114,13 @@ indexthis_vendor = function(pkg = "."){
     old_r_code = readLines(dest_path_r)
     
     if(!is_same_code(current_r_code, old_r_code)){
-      message("Updating the file '", dest_path_r, "'")
+      message(intro, "Updating the file '", dest_path_r, "'")
+      intro = ""
       writeLines(current_r_code, dest_path_r)
     }
   } else {
-    message("Creating the file '", dest_path_r, "'")
+    message(intro, "Creating the file '", dest_path_r, "'")
+    intro = ""
     create_dir(dest_path_r)
     writeLines(current_r_code, dest_path_r)
   }
@@ -100,20 +137,32 @@ indexthis_vendor = function(pkg = "."){
   
   current_cpp_code = readLines(path_cpp)
   current_cpp_code = gsub("_indexthis", pkg_name_, current_cpp_code)
-  if(is_rcpp){
+  if(type != "no-src-code"){
     i = which(grepl("^extern ", current_cpp_code))[1]
-    current_cpp_code = c(current_cpp_code[1:(i - 1)], RCPP_EXPORT, "")
+    if(type == "Rcpp"){
+      core = RCPP_EXPORT
+    } else if(type == "cpp11"){
+      core = CPP11_EXPORT
+    } else {
+      # type == "existing-code"
+      core = c("/*", "", current_cpp_code[i:length(current_cpp_code)], "*/")
+    }
+    
+    current_cpp_code = c(current_cpp_code[1:(i - 1)], core, "")
   }
+  
   
   if(file.exists(dest_path_cpp)){
     old_cpp_code = readLines(dest_path_cpp)
     
     if(!is_same_code(current_cpp_code, old_cpp_code)){
-      message("Updating the file '", dest_path_cpp, "'")
+      message(intro, "Updating the file '", dest_path_cpp, "'")
+      intro = ""
       writeLines(current_cpp_code, dest_path_cpp)
     }
   } else {
-    message("Creating the file '", dest_path_cpp, "'")
+    message(intro, "Creating the file '", dest_path_cpp, "'")
+    intro = ""
     create_dir(dest_path_cpp)
     writeLines(current_cpp_code, dest_path_cpp)
   }
@@ -126,13 +175,13 @@ indexthis_vendor = function(pkg = "."){
   dynlib = paste0("useDynLib(", pkg_name, ", .registration = TRUE)")
   
   if(!file.exists(namespace_path)){
-    message("Creating a NAMESPACE file with the associated `dynlib`")
+    message(intro, "Creating a NAMESPACE file with the associated `useDynLib`")
     writeLines(c(dynlib, ""), namespace_path)
   } else {
     namespace = readLines(namespace_path)
     
     if(!any(grepl("useDynLib", namespace))){
-      message("Updating the NAMESPACE file with the associated `dynlib`")
+      message(intro, "Updating the NAMESPACE file with the associated `useDynLib`")
       new_namespace = c(dynlib, "", namespace)
       writeLines(new_namespace, namespace_path)
     } 
@@ -147,8 +196,9 @@ indexthis_vendor = function(pkg = "."){
 #### internal ####
 ####
 
+
 create_dir = function(path){
-  dir = dirname(normalizePath(path))
+  dir = dirname(normalizePath(path, mustWork = FALSE))
   if(!dir.exists(dir)){
     dir.create(dir, recursive = TRUE)
   }
@@ -262,6 +312,6 @@ RCPP_EXPORT = c("// [[Rcpp::export(rng = false)]]",
                 "  return indexthis::cpp_to_index_main(x);",
                 "}")
 
-
-
+# all the same, just the first line differs
+CPP11_EXPORT = c("// [[cpp11::register]]", RCPP_EXPORT[-1])
 

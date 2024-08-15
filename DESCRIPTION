@@ -1,7 +1,7 @@
 Package: indexthis
 Type: Package
 Title: Quick Indexation
-Version: 1.1.0
+Version: 2.0.0
 Authors@R:
     c(person(given = "Laurent",
              family = "Berge",
