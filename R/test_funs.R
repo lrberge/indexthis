@@ -398,9 +398,18 @@ run_tests = function(chunk, from = 1, source = FALSE){
 
     if(!missing(from)){
       if(is.character(from)){
-        from = check_set_options(from, chunk_names, "test_fun")[1]
+        from_match = pmatch(from, chunk_names)[1]
+        if(is.na(from_match)){
+          stop("Arg. `from` should be a numeric scalar or one of the following values:\n",
+               paste0(chunk_names, collapse = ", "), 
+               "\nPROBLEM: no match found for '", from, "'")
+        }
+        from = from_match
       } else {
-        check_numeric(from, scalar = TRUE, integer = TRUE)
+        if(!is.numeric(from)){
+          stop("Arg. `from` should be a numeric scalar or one of the following values:\n",
+               paste0(chunk_names, collapse = ", "))
+        }
       }
 
       if(is.numeric(from)){
@@ -414,9 +423,19 @@ run_tests = function(chunk, from = 1, source = FALSE){
 
     } else {
       if(is.character(chunk)){
-        chunk = check_set_options(chunk, chunk_names, "test_fun")
+        chunk_match = pmatch(chunk, chunk_names)
+        if(any(is.na(chunk_match))){
+          stop("Arg. `from` should be a numeric scalar or one of the following values:\n",
+               paste0(chunk_names, collapse = ", "), 
+               "\nPROBLEM: no match found for ", 
+               paste0(chunk[is.na(chunk_match)], collapse = ", "))
+        }
+        chunk = chunk_match
       } else {
-        check_numeric(chunk, scalar = TRUE, integer = TRUE)
+        if(!is.numeric(chunk)){
+          stop("Arg. `chunk` should be a numeric scalar or one of the following values:\n",
+               paste0(chunk_names, collapse = ", "))
+        }
       }
 
       if(is.numeric(chunk)){
