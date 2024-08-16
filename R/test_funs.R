@@ -548,7 +548,7 @@ non_ascii = function(folder = "R"){
         text = all_R_text[[i]]
         all_lines = which(grepl("[^ -~\t]", text))
         for(line in all_lines){
-            message("-> line ", string_fill(line, max(nchar(all_lines))), ":\n===|", text[line])
+            message("-> line ", sprintf("%-*s", max(nchar(all_lines)), line), ":\n===|", text[line])
             message("===|", gsub("[^ -~\t]", "__HERE__", text[line]))
 
             if(line != all_lines[length(all_lines)]) message("")

@@ -130,7 +130,7 @@ to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,
 
   if(length(unique(n_all)) != 1){
     stop("All elements in `...` should be of the same length (current lenghts are ", 
-         enum(n_all), ").")
+         paste0(n_all, collapse = ", "), ").")
   }
   
   if(n == 0){
