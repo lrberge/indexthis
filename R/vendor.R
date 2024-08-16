@@ -225,7 +225,8 @@ renvir_get = function(key){
 }
 
 is_indexthis_root = function(){
-  isTRUE(renvir_get("indexthis_ROOT"))
+  # we also check we're in the right directory
+  isTRUE(renvir_get("indexthis_ROOT")) && file.exists("./R/to_index.R")
 }
 
 indexthis_version = function(){
