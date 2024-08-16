@@ -33,8 +33,8 @@ local({
   
   # VSCode specific
   # adapted from: https://github.com/REditorSupport/vscode-R/wiki/Interacting-with-R-terminals
-  # => no error if file is missing
-  if (interactive() && Sys.getenv("RSTUDIO") == "") {
+  # => no error if file is missing + we hard check vscode
+  if(interactive() && Sys.getenv("RSTUDIO") == "" && any(grepl("VSCODE", names(Sys.getenv())))){
     Sys.setenv(TERM_PROGRAM = "vscode")
     HOME = if(.Platform$OS.type == "windows") "USERPROFILE" else "HOME"
     my_file = file.path(Sys.getenv(HOME), ".vscode-R", "init.R")
