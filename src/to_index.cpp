@@ -37,10 +37,11 @@ namespace indexthis {
 
 enum {T_INT, T_DBL_INT, T_DBL, T_STR};
 
-union double2int {
-  double dbl;
-  uint32_t uint[2];
-};
+inline int double_to_uint32(const double &x){
+  uint32_t y[2];
+  std::memcpy(y, &x, sizeof(y));
+  return y[0] + y[1];
+}
 
 inline int power_of_two(double x){
   return std::ceil(std::log2(x + 1));
@@ -280,7 +281,6 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
   
   const int x_type = x->type;
   
-  union double2int u_d2int;
   int g = 0;
   uint32_t id = 0;
   int obs = 0;
@@ -359,8 +359,7 @@ void general_type_to_index_single(r_vector *x, int *__restrict p_index, int &n_g
           id = hash_single((int) px_dbl[i], shifter);
         }
       } else {
-        u_d2int.dbl = px_dbl[i];
-        id = hash_single(u_d2int.uint[0] + u_d2int.uint[1], shifter);
+        id = hash_single(double_to_uint32(px_dbl[i]), shifter);
       }      
       
       bool does_exist = false;
@@ -486,7 +485,6 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
     int *hashed_obs_vec = new int[larger_n + 1];
     std::fill_n(hashed_obs_vec, larger_n + 1, 0);
     
-    union double2int u_d2int;
     uint32_t id = 0;
     int obs = 0;
     if(x_type == T_STR){
@@ -564,8 +562,7 @@ void general_type_to_index_double(r_vector *x, int *__restrict p_index_in,
             id = hash_double((int) px_dbl[i], p_index_in[i], shifter);
           }
         } else {
-          u_d2int.dbl = px_dbl[i];
-          id = hash_double(u_d2int.uint[0] + u_d2int.uint[1], p_index_in[i], shifter);
+          id = hash_double(double_to_uint32(px_dbl[i]), p_index_in[i], shifter);
         }
         
         bool does_exist = false;
