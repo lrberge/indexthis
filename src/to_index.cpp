@@ -103,7 +103,7 @@ r_vector::r_vector(SEXP x){
   if(TYPEOF(x) == STRSXP){
     // character
     this->type = T_STR;
-    this->px_intptr = (intptr_t *) STRING_PTR(x);
+    this->px_intptr = (intptr_t *) STRING_PTR_RO(x);
     
   } else if(Rf_isNumeric(x) || Rf_isFactor(x) || TYPEOF(x) == LGLSXP){
       
@@ -226,7 +226,7 @@ r_vector::r_vector(SEXP x){
       
       // conversion succeeded
       this->type = T_STR;
-      this->px_intptr = (intptr_t *) STRING_PTR(this->x_conv);
+      this->px_intptr = (intptr_t *) STRING_PTR_RO(this->x_conv);
       this->is_protect = true;
       
     } else {

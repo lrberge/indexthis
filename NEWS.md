@@ -1,4 +1,10 @@
 
+# indexthis 2.1.0
+
+## comply to new CRAN rules
+
+- replace R's non-API STRING_PTR with STRING_PTR_RO
+
 # indexthis 2.0.0
 
 ## New features
