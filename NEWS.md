@@ -1,4 +1,9 @@
 
+# indexthis 2.2.0
+
+- improve PROTECT/UNPROTECT rules
+- remove Rf_error from c functions
+
 # indexthis 2.1.0
 
 ## comply to new CRAN rules

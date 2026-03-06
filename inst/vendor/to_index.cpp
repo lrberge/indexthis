@@ -4,6 +4,7 @@
 // 
 
 
+#include <stdexcept>
 #include <stdint.h>
 #include <cmath>
 #include <vector>
@@ -53,6 +54,7 @@ r_vector::r_vector(SEXP x){
   int n = Rf_length(x);
   this->n = n;
   bool IS_INT = false;
+  throw std::runtime_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
   if(TYPEOF(x) == STRSXP){
     this->type = T_STR;
     this->px_intptr = (intptr_t *) STRING_PTR_RO(x);
@@ -146,7 +148,7 @@ r_vector::r_vector(SEXP x){
       this->px_intptr = (intptr_t *) STRING_PTR_RO(this->x_conv);
       this->is_protect = true;
     } else {
-      Rf_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
+      throw std::runtime_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
     }    
   }
 }

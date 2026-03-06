@@ -22,7 +22,6 @@
 // - there are many repetitions to handle many different cases. The problem is that
 // the compiler does not optimize the loops if I write more compactly. So be it.
 
-
 #include <stdint.h>
 #include <cmath>
 #include <vector>
@@ -91,6 +90,12 @@ public:
   double *px_dbl = (double *) nullptr;
   intptr_t *px_intptr = (intptr_t *) nullptr;
   
+  ~r_vector(){
+    if(is_protect){
+      UNPROTECT(1);
+    }
+  }
+  
 };
 
 r_vector::r_vector(SEXP x){
@@ -99,7 +104,6 @@ r_vector::r_vector(SEXP x){
   this->n = n;
   
   bool IS_INT = false;
-  
   if(TYPEOF(x) == STRSXP){
     // character
     this->type = T_STR;
@@ -214,13 +218,12 @@ r_vector::r_vector(SEXP x){
     
     if(TYPEOF(x) == CHARSXP || TYPEOF(x) == LGLSXP || TYPEOF(x) == INTSXP || 
       TYPEOF(x) == REALSXP || TYPEOF(x) == CPLXSXP || TYPEOF(x) == STRSXP || TYPEOF(x) == RAWSXP){
-      // we convert to character
-      SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("as.character"), x));
   
       int any_error;
-      this->x_conv = PROTECT(R_tryEval(call_as_character, R_GlobalEnv, &any_error));
-
+      this->x_conv = PROTECT(R_tryEval(Rf_lang2(Rf_install("as.character"), x), R_GlobalEnv, &any_error));
+      
       if(any_error){
+        UNPROTECT(1);
         Rf_error("In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n");
       }
       
@@ -960,14 +963,6 @@ SEXP cpp_to_index_main(SEXP &x){
   Rf_setAttrib(res, R_NamesSymbol, std_string_to_r_string({"index", "first_obs"}));
     
   UNPROTECT(3);
-  
-  // we unprotect if we have converted some vectors to character
-  for(int k=0; k<K; ++k){
-    if(all_vecs[k].is_protect){
-      UNPROTECT(2);
-    }
-  }
-  
   
   return res;  
 }
