@@ -75,6 +75,10 @@ public:
   int x_min = 0;
   int type = 0;
   
+  // error
+  bool is_error = false;
+  std::string error_msg;
+  
   // if a non numeric non character vector has been turned into character
   // we need to keep track of protection
   bool is_protect = false;
@@ -223,8 +227,8 @@ r_vector::r_vector(SEXP x){
       this->x_conv = PROTECT(R_tryEval(Rf_lang2(Rf_install("as.character"), x), R_GlobalEnv, &any_error));
       
       if(any_error){
-        UNPROTECT(1);
-        Rf_error("In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n");
+        this->is_error = true;
+        this->error_msg = "In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n";
       }
       
       // conversion succeeded
@@ -233,7 +237,8 @@ r_vector::r_vector(SEXP x){
       this->is_protect = true;
       
     } else {
-      Rf_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
+      this->is_error = true;
+      this->error_msg = "In `to_index`, the R vectors must be atomic. The current type is not valid.";
     }    
     
   }
@@ -835,16 +840,26 @@ SEXP cpp_to_index_main(SEXP &x){
   std::vector<r_vector> all_vecs;
   
   // we set up the info with the rvec class. It makes it easy to pass across functions
+  bool is_error = false;
+  std::string error_msg;
   if(TYPEOF(x) == VECSXP){
     K = Rf_length(x);
     for(int k=0; k<K; ++k){
       r_vector rvec(VECTOR_ELT(x, k));
       all_vecs.push_back(rvec);
       
+      if(all_vecs.back().is_error){
+        is_error = true;
+        error_msg = all_vecs.back().error_msg;
+        break;
+      }
+      
       if(k == 0){
         n = Rf_length(VECTOR_ELT(x, 0));
       } else if((size_t) Rf_length(VECTOR_ELT(x, k)) != n){
-        Rf_error("All the vectors to turn into an index must be of the same length. This is currently not the case.");
+        is_error = true;
+        error_msg = "All the vectors to turn into an index must be of the same length. This is currently not the case.";
+        break;
       }
     }
     
@@ -853,6 +868,19 @@ SEXP cpp_to_index_main(SEXP &x){
     n = Rf_length(x);
     r_vector rvec(x);
     all_vecs.push_back(rvec);
+  }
+  
+  if(is_error){
+    SEXP sexp_is_error = PROTECT(Rf_allocVector(LGLSXP, 1));
+    SEXP sexp_error_msg = PROTECT(std_string_to_r_string({error_msg}));
+    SEXP res = PROTECT(Rf_allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(res, 0, sexp_is_error);
+    SET_VECTOR_ELT(res, 1, sexp_error_msg);
+    
+    // names
+    Rf_setAttrib(res, R_NamesSymbol, std_string_to_r_string({"is_error", "error_msg"}));
+    UNPROTECT(3);
+    return res;
   }
   
   // the result to be returned
