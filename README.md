@@ -18,7 +18,7 @@ to_index(x, y)
 
 ```
 
-As you can see, the vector `x` is turned into an integer whose values map the unique values of `x`. The second example is the same for the combination of `x` and `y`. This function is equivalent to, and is inspired from, [collapse::GRPid](https://sebkrantz.github.io/collapse/reference/GRP.html).
+As you can see, the vector `x` is turned into an integer whose values map the unique values of `x`. The second example is the same for the combination of `x` and `y`. This function is equivalent to, and is inspired from, [collapse::GRPid](https://fastverse.org/collapse/reference/GRP.html).
 
 ## How does it work?
 
@@ -32,7 +32,7 @@ The fact that hash values must lie within `[0; 2*n]` necessarily leads to multip
 
 Although the algorithm may look slow at first sight because of the extensive collision checking, in practice it works very well. 
 
-This algorithm is brilliant and is faster than everything else I've tested. The idea definitely isn't mine. I've got it from peering into Sebastian Krantz's [`collapse`](https://sebkrantz.github.io/collapse/index.html) (excellent) package, who's got it from Morgan Jacob's [`kit`](https://github.com/2005m/kit) package. Morality: OSS rocks.
+This algorithm is brilliant and is faster than everything else I've tested. The idea definitely isn't mine. I've got it from peering into Sebastian Krantz's [`collapse`](https://sebkrantz.github.io/collapse/index.html) (excellent) package, who's got it from Morgan Jacob's [`kit`](https://github.com/fastverse/kit) package. Morality: OSS rocks.
 
 ## Difference with existing algorithms
 
