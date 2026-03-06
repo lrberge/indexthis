@@ -10,7 +10,7 @@
 * Credits: I got the idea of the hashing algorihtm from Sebastian Ktrantz's code *
 * who's got it from Morgan Jacob's code.                                         *
 *                                                                                * 
-* Otherwise, 100% original code + a few original ideas.                          * 
+* Otherwise, 100% implementation + a few original ideas.                         * 
 *                                                                                *
 *********************************************************************************/
 
@@ -27,6 +27,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <memory>
 #include <R.h>
 #include <Rinternals.h>
 
@@ -66,6 +67,10 @@ class r_vector {
   
 public:
   r_vector(SEXP);
+  
+  // removing the copy and assignment
+  // r_vector(const r_vector &) = delete;
+  // r_vector operator=(const r_vector &) = delete;
   
   // public properties
   int n;
@@ -225,21 +230,23 @@ r_vector::r_vector(SEXP x){
   
       int any_error;
       this->x_conv = PROTECT(R_tryEval(Rf_lang2(Rf_install("as.character"), x), R_GlobalEnv, &any_error));
+      this->is_protect = true;
       
       if(any_error){
         this->is_error = true;
         this->error_msg = "In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n";
+        return;
       }
       
       // conversion succeeded
       this->type = T_STR;
       this->px_intptr = (intptr_t *) STRING_PTR_RO(this->x_conv);
-      this->is_protect = true;
       
     } else {
       this->is_error = true;
       this->error_msg = "In `to_index`, the R vectors must be atomic. The current type is not valid.";
-    }    
+      return;
+    }
     
   }
 }
@@ -618,7 +625,7 @@ inline void update_index_intarray_g_obs(int id, size_t i, int &g, int * &int_arr
   }  
 }
 
-void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k, 
+void multiple_ints_to_index(const vector<std::shared_ptr<r_vector>> &all_vecs, vector<int> &all_k, 
                             int *__restrict p_index, int &n_groups,
                             vector<int> &vec_first_obs, bool is_final){
   
@@ -626,11 +633,11 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
   int K = all_k.size();
     
   for(auto &&k : all_k){
-    sum_bin_ranges += all_vecs[k].x_range_bin;
+    sum_bin_ranges += all_vecs[k]->x_range_bin;
   }  
   
   int k0 = all_k[0];
-  r_vector *x0 = &all_vecs[k0];
+  r_vector *x0 = all_vecs[k0].get();
   const size_t n = x0->n;
   const int * px0_int = (int *) x0->px_int;
   const double * px0_dbl = (double *) x0->px_dbl;
@@ -689,7 +696,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
   } else {
     
     int k1 = all_k[1];
-    r_vector *x1 = &all_vecs[k1];
+    r_vector *x1 = all_vecs[k1].get();
     const int *px1_int = (int *) x1->px_int;
     const double *px1_dbl = (double *) x1->px_dbl;
     
@@ -768,7 +775,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
       offset += x1->x_range_bin;
       for(int ind=2 ; ind<K-1 ; ++ind){
         int k = all_k[ind];
-        r_vector *xk = &all_vecs[k];
+        r_vector *xk = all_vecs[k].get();
         const int *pxk_int = (int *) xk->px_int;
         const double *pxk_dbl = (double *) xk->px_dbl;
         
@@ -788,7 +795,7 @@ void multiple_ints_to_index(vector<r_vector> &all_vecs, vector<int> &all_k,
             
       // last element + group creation
       int k = all_k[K - 1];
-      r_vector *xk = &all_vecs[k];
+      r_vector *xk = all_vecs[k].get();
       const int *pxk_int = (int *) xk->px_int;
       const double *pxk_dbl = (double *) xk->px_dbl;
       
@@ -837,7 +844,10 @@ SEXP cpp_to_index_main(SEXP &x){
   
   size_t n = 0;
   int K = 0;
-  std::vector<r_vector> all_vecs;
+  
+  // NOTA: because the UNPROTECT is tied to the destructor, we do not want any
+  //       copy => we use smart pointers
+  std::vector<std::shared_ptr<r_vector>> all_pvecs;
   
   // we set up the info with the rvec class. It makes it easy to pass across functions
   bool is_error = false;
@@ -845,12 +855,13 @@ SEXP cpp_to_index_main(SEXP &x){
   if(TYPEOF(x) == VECSXP){
     K = Rf_length(x);
     for(int k=0; k<K; ++k){
-      r_vector rvec(VECTOR_ELT(x, k));
-      all_vecs.push_back(rvec);
       
-      if(all_vecs.back().is_error){
+      std::shared_ptr<r_vector> prvec = std::make_shared<r_vector>(VECTOR_ELT(x, k));
+      all_pvecs.push_back(prvec);
+      
+      if(all_pvecs.back()->is_error){
         is_error = true;
-        error_msg = all_vecs.back().error_msg;
+        error_msg = all_pvecs.back()->error_msg;
         break;
       }
       
@@ -866,8 +877,8 @@ SEXP cpp_to_index_main(SEXP &x){
   } else {
     K = 1;
     n = Rf_length(x);
-    r_vector rvec(x);
-    all_vecs.push_back(rvec);
+    std::shared_ptr<r_vector> prvec = std::make_shared<r_vector>(x);
+    all_pvecs.push_back(prvec);
   }
   
   if(is_error){
@@ -896,9 +907,9 @@ SEXP cpp_to_index_main(SEXP &x){
   int sum_bin_ranges = 0;
   vector<int> id_fast_int;
   for(int k=0 ; k<K ; ++k){
-    r_vector *x = &all_vecs[k];
-    if(x->is_fast_int){
-      int new_bin_range = sum_bin_ranges + x->x_range_bin;
+    const r_vector &x = *(all_pvecs[k]);
+    if(x.is_fast_int){
+      int new_bin_range = sum_bin_ranges + x.x_range_bin;
       if(new_bin_range < 17 || (K >= 2 && new_bin_range <= power_of_two(5 * n))){
         id_fast_int.push_back(k);
         sum_bin_ranges = new_bin_range;
@@ -920,7 +931,7 @@ SEXP cpp_to_index_main(SEXP &x){
     init_done = true;
     
     is_final = (size_t) K == id_fast_int.size();
-    multiple_ints_to_index(all_vecs, id_fast_int, p_index, n_groups, vec_first_obs, is_final);
+    multiple_ints_to_index(all_pvecs, id_fast_int, p_index, n_groups, vec_first_obs, is_final);
   }
   
   if(!is_final){
@@ -947,7 +958,7 @@ SEXP cpp_to_index_main(SEXP &x){
       all_k_left.erase(all_k_left.begin());
       
       is_final = all_k_left.empty();
-      general_type_to_index_single(&all_vecs[k0], p_index, n_groups, vec_first_obs, is_final);
+      general_type_to_index_single(all_pvecs[k0].get(), p_index, n_groups, vec_first_obs, is_final);
     }
     
     if(!is_final){
@@ -961,10 +972,10 @@ SEXP cpp_to_index_main(SEXP &x){
         int k = all_k_left[ind];
         is_final = ind == all_k_left.size() - 1;
         if(is_res_updated_index){
-          general_type_to_index_double(&all_vecs[k], p_index, p_extra_index, n_groups, vec_first_obs, is_final);
+          general_type_to_index_double(all_pvecs[k].get(), p_index, p_extra_index, n_groups, vec_first_obs, is_final);
           is_res_updated_index = false;
         } else {
-          general_type_to_index_double(&all_vecs[k], p_extra_index, p_index, n_groups, vec_first_obs, is_final);
+          general_type_to_index_double(all_pvecs[k].get(), p_extra_index, p_index, n_groups, vec_first_obs, is_final);
           is_res_updated_index = true;
         }
       }
