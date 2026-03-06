@@ -1,10 +1,9 @@
 // 
 // Generated automatically with indexthis::indexthis_vendor
-// this is indexthis version 2.1.0
+// this is indexthis version 2.2.0
 // 
 
 
-#include <stdexcept>
 #include <stdint.h>
 #include <cmath>
 #include <vector>
@@ -43,18 +42,24 @@ public:
   int x_range_bin = 0;
   int x_min = 0;
   int type = 0;
+  bool is_error = false;
+  std::string error_msg;
   bool is_protect = false;
   bool any_na = true;
   int NA_value = -1;
   int *px_int = (int *) nullptr;
   double *px_dbl = (double *) nullptr;
   intptr_t *px_intptr = (intptr_t *) nullptr;
+  ~r_vector(){
+    if(is_protect){
+      UNPROTECT(1);
+    }
+  }
 };
 r_vector::r_vector(SEXP x){
   int n = Rf_length(x);
   this->n = n;
   bool IS_INT = false;
-  throw std::runtime_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
   if(TYPEOF(x) == STRSXP){
     this->type = T_STR;
     this->px_intptr = (intptr_t *) STRING_PTR_RO(x);
@@ -138,17 +143,18 @@ r_vector::r_vector(SEXP x){
   } else {
     if(TYPEOF(x) == CHARSXP || TYPEOF(x) == LGLSXP || TYPEOF(x) == INTSXP || 
       TYPEOF(x) == REALSXP || TYPEOF(x) == CPLXSXP || TYPEOF(x) == STRSXP || TYPEOF(x) == RAWSXP){
-      SEXP call_as_character = PROTECT(Rf_lang2(Rf_install("as.character"), x));
       int any_error;
-      this->x_conv = PROTECT(R_tryEval(call_as_character, R_GlobalEnv, &any_error));
+      this->x_conv = PROTECT(R_tryEval(Rf_lang2(Rf_install("as.character"), x), R_GlobalEnv, &any_error));
       if(any_error){
-        Rf_error("In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n");
+        this->is_error = true;
+        this->error_msg = "In `to_index`, the vector to index was not standard (int or real, etc) and failed to be converted to character before applying indexation._n";
       }
       this->type = T_STR;
       this->px_intptr = (intptr_t *) STRING_PTR_RO(this->x_conv);
       this->is_protect = true;
     } else {
-      throw std::runtime_error("In `to_index`, the R vectors must be atomic. The current type is not valid.");
+      this->is_error = true;
+      this->error_msg = "In `to_index`, the R vectors must be atomic. The current type is not valid.";
     }    
   }
 }
@@ -615,15 +621,24 @@ SEXP cpp_to_index_main(SEXP &x){
   size_t n = 0;
   int K = 0;
   std::vector<r_vector> all_vecs;
+  bool is_error = false;
+  std::string error_msg;
   if(TYPEOF(x) == VECSXP){
     K = Rf_length(x);
     for(int k=0; k<K; ++k){
       r_vector rvec(VECTOR_ELT(x, k));
       all_vecs.push_back(rvec);
+      if(all_vecs.back().is_error){
+        is_error = true;
+        error_msg = all_vecs.back().error_msg;
+        break;
+      }
       if(k == 0){
         n = Rf_length(VECTOR_ELT(x, 0));
       } else if((size_t) Rf_length(VECTOR_ELT(x, k)) != n){
-        Rf_error("All the vectors to turn into an index must be of the same length. This is currently not the case.");
+        is_error = true;
+        error_msg = "All the vectors to turn into an index must be of the same length. This is currently not the case.";
+        break;
       }
     }
   } else {
@@ -631,6 +646,16 @@ SEXP cpp_to_index_main(SEXP &x){
     n = Rf_length(x);
     r_vector rvec(x);
     all_vecs.push_back(rvec);
+  }
+  if(is_error){
+    SEXP sexp_is_error = PROTECT(Rf_allocVector(LGLSXP, 1));
+    SEXP sexp_error_msg = PROTECT(std_string_to_r_string({error_msg}));
+    SEXP res = PROTECT(Rf_allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(res, 0, sexp_is_error);
+    SET_VECTOR_ELT(res, 1, sexp_error_msg);
+    Rf_setAttrib(res, R_NamesSymbol, std_string_to_r_string({"is_error", "error_msg"}));
+    UNPROTECT(3);
+    return res;
   }
   SEXP index = PROTECT(Rf_allocVector(INTSXP, n));
   int *p_index = INTEGER(index);
@@ -699,11 +724,6 @@ SEXP cpp_to_index_main(SEXP &x){
   SET_VECTOR_ELT(res, 1, r_first_obs);
   Rf_setAttrib(res, R_NamesSymbol, std_string_to_r_string({"index", "first_obs"}));
   UNPROTECT(3);
-  for(int k=0; k<K; ++k){
-    if(all_vecs[k].is_protect){
-      UNPROTECT(2);
-    }
-  }
   return res;  
 }
 }

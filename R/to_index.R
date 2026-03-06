@@ -152,6 +152,12 @@ to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,
   #
   
   info = .Call(`_indexthis_cpp_to_index`, dots)
+  
+  # no errors in the c code, handled here
+  if(isTRUE(info$is_error)){
+    stop(info$error_msg)
+  }
+  
   index = info$index
   if(sorted || return_items){
     

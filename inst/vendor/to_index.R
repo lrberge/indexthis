@@ -1,6 +1,6 @@
 # 
 # Generated automatically with indexthis::indexthis_vendor
-# this is indexthis version 2.1.0
+# this is indexthis version 2.2.0
 # 
 
 
@@ -40,6 +40,9 @@ to_index = function(..., list = NULL, sorted = FALSE, items = FALSE,
     return(res)
   }
   info = .Call(`_indexthis_cpp_to_index`, dots)
+  if(isTRUE(info$is_error)){
+    stop(info$error_msg)
+  }
   index = info$index
   if(sorted || return_items){
     items_unik = vector("list", Q)
